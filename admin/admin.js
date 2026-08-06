@@ -1,6 +1,8 @@
 // ============================================================
 // Admin dashboard untuk Kejohanan Olahraga PPKI MSS Pahang
-// Firebase Auth (emel/kata laluan) + Firestore (data) + Storage (gambar)
+// Firebase Auth (emel/kata laluan) + Firestore (data teks/tarikh/link)
+// Gambar TIDAK melalui Firebase (elak keperluan plan Blaze/kad kredit)
+// -> gambar diuruskan macam logo: upload manual ke folder images/ repo
 // ============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
@@ -9,26 +11,22 @@ import {
 import {
   getFirestore, doc, getDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
 import { firebaseConfig } from "../firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 const CONFIG_DOC = doc(db, "site", "config");
 
+// path gambar tetap (fail statik dalam repo, sama konsep macam logo)
 const IMAGE_PATHS = {
-  hero: "images/hero.jpg",
-  kotak0: "images/kotak-pendaftaran.jpg",
-  kotak1: "images/kotak-callroom.jpg",
-  kotak2: "images/kotak-keputusan.jpg",
+  hero: "../images/hero.jpg",
+  kotak0: "../images/kotak-pendaftaran.jpg",
+  kotak1: "../images/kotak-callroom.jpg",
+  kotak2: "../images/kotak-keputusan.jpg",
 };
 
-// nilai lalai jika dokumen Firestore belum wujud (kali pertama admin login)
 const DEFAULT_STATE = {
   acara: {
     nama_penuh: "Kejohanan Olahraga Pendidikan Khas MSS Pahang",
@@ -37,18 +35,17 @@ const DEFAULT_STATE = {
     lokasi: "",
     tarikh_buka_pendaftaran: "",
     tarikh_tutup_pendaftaran: "",
-    gambar_hero_url: "",
+    gambar_hero: "images/hero.jpg",
   },
   kotak: [
-    { label: "Pendaftaran", keterangan: "", link: "", gambar_url: "" },
-    { label: "Call Room", keterangan: "", link: "", gambar_url: "" },
-    { label: "Keputusan Tidak Rasmi", keterangan: "", link: "", gambar_url: "" },
+    { label: "Pendaftaran", keterangan: "", link: "", gambar: "images/kotak-pendaftaran.jpg" },
+    { label: "Call Room", keterangan: "", link: "", gambar: "images/kotak-callroom.jpg" },
+    { label: "Keputusan Tidak Rasmi", keterangan: "", link: "", gambar: "images/kotak-keputusan.jpg" },
   ],
   maklumat_berkaitan: [],
 };
 
 let state = null;
-const pendingImages = {}; // { key: File }
 
 // ---------------- utils ----------------
 function toDatetimeLocal(iso) {
@@ -72,7 +69,6 @@ function escapeAttr(s) {
 async function loadContent() {
   const snap = await getDoc(CONFIG_DOC);
   state = snap.exists() ? snap.data() : JSON.parse(JSON.stringify(DEFAULT_STATE));
-  // pastikan struktur kotak sentiasa ada 3 elemen walaupun data lama tak lengkap
   if (!state.kotak || state.kotak.length < 3) state.kotak = DEFAULT_STATE.kotak;
   if (!state.maklumat_berkaitan) state.maklumat_berkaitan = [];
 }
@@ -86,12 +82,12 @@ function renderForm() {
   document.getElementById("f-tarikh-buka").value = toDatetimeLocal(state.acara.tarikh_buka_pendaftaran);
   document.getElementById("f-tarikh-tutup").value = toDatetimeLocal(state.acara.tarikh_tutup_pendaftaran);
 
-  if (state.acara.gambar_hero_url) document.getElementById("hero-preview").src = state.acara.gambar_hero_url;
+  document.getElementById("hero-preview").src = IMAGE_PATHS.hero + "?t=" + Date.now();
 
   state.kotak.forEach((k, i) => {
     document.getElementById(`kotak-${i}-keterangan`).value = k.keterangan || "";
     document.getElementById(`kotak-${i}-link`).value = k.link || "";
-    if (k.gambar_url) document.getElementById(`kotak-${i}-preview`).src = k.gambar_url;
+    document.getElementById(`kotak-${i}-preview`).src = IMAGE_PATHS["kotak" + i] + "?t=" + Date.now();
   });
 
   renderInfoList();
@@ -148,10 +144,12 @@ function collectForm() {
   state.acara.lokasi = document.getElementById("f-lokasi").value.trim();
   state.acara.tarikh_buka_pendaftaran = fromDatetimeLocal(document.getElementById("f-tarikh-buka").value);
   state.acara.tarikh_tutup_pendaftaran = fromDatetimeLocal(document.getElementById("f-tarikh-tutup").value);
+  state.acara.gambar_hero = "images/hero.jpg"; // path tetap, gambar tukar manual di GitHub
 
   state.kotak.forEach((k, i) => {
     k.keterangan = document.getElementById(`kotak-${i}-keterangan`).value.trim();
     k.link = document.getElementById(`kotak-${i}-link`).value.trim();
+    k.gambar = IMAGE_PATHS["kotak" + i].replace("../", ""); // path tetap
   });
 }
 
@@ -163,28 +161,7 @@ async function saveAll() {
 
   try {
     collectForm();
-
-    // 1. upload gambar yang ditukar ke Firebase Storage
-    for (const [key, file] of Object.entries(pendingImages)) {
-      const path = IMAGE_PATHS[key];
-      setStatus(`Memuat naik gambar (${path})...`, null);
-      const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-
-      if (key === "hero") {
-        state.acara.gambar_hero_url = url;
-      } else {
-        const idx = Number(key.replace("kotak", ""));
-        state.kotak[idx].gambar_url = url;
-      }
-    }
-
-    // 2. simpan dokumen Firestore
-    setStatus("Menyimpan maklumat...", null);
     await setDoc(CONFIG_DOC, state);
-
-    Object.keys(pendingImages).forEach(k => delete pendingImages[k]);
     setStatus("✓ Berjaya disimpan. Laman utama akan terus update.", "ok");
     renderForm();
   } catch (err) {
@@ -193,16 +170,6 @@ async function saveAll() {
   } finally {
     btn.disabled = false;
   }
-}
-
-// ---------------- image input wiring ----------------
-function wireImageInput(inputId, previewId, key) {
-  document.getElementById(inputId).addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    pendingImages[key] = file;
-    document.getElementById(previewId).src = URL.createObjectURL(file);
-  });
 }
 
 // ---------------- auth flow ----------------
@@ -230,7 +197,6 @@ document.getElementById("btn-connect").addEventListener("click", async () => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
     gateStatus.textContent = "";
-    // enterDashboard() akan dipanggil automatik oleh onAuthStateChanged
   } catch (err) {
     gateStatus.textContent = "✗ Emel atau kata laluan salah.";
   }
@@ -244,11 +210,6 @@ document.getElementById("btn-add-info").addEventListener("click", () => {
 });
 
 document.getElementById("btn-logout").addEventListener("click", () => signOut(auth));
-
-wireImageInput("hero-input", "hero-preview", "hero");
-wireImageInput("kotak-0-input", "kotak-0-preview", "kotak0");
-wireImageInput("kotak-1-input", "kotak-1-preview", "kotak1");
-wireImageInput("kotak-2-input", "kotak-2-preview", "kotak2");
 
 onAuthStateChanged(auth, (user) => {
   if (user) {

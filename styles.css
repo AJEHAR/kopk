@@ -109,6 +109,24 @@ a { color: inherit; }
 }
 @media (min-width: 720px) { .site-header__title { display: block; } }
 
+.admin-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--ink-soft);
+  text-decoration: none;
+  flex: none;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+.admin-link:hover, .admin-link:focus-visible {
+  background: var(--paper-dim);
+  color: var(--navy-950);
+  transform: rotate(24deg);
+}
+
 /* ============================================
    HERO — full bleed, parallax image, glass countdown
    ============================================ */

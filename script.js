@@ -46,9 +46,9 @@ function renderHero(acara) {
   document.getElementById("footer-name").textContent = acara.nama_penuh;
   document.getElementById("footer-lokasi").textContent = acara.lokasi;
 
-  if (acara.gambar_hero_url) {
+  if (acara.gambar_hero) {
     const bg = document.getElementById("hero-bg");
-    bg.src = acara.gambar_hero_url;
+    bg.src = acara.gambar_hero;
     bg.alt = acara.nama_penuh;
   }
 }
@@ -58,7 +58,7 @@ function renderCards(kotak) {
   el.innerHTML = kotak.map((k, i) => `
     <a class="card" href="${k.link}" target="_blank" rel="noopener noreferrer" data-reveal data-card-index="${i}">
       <span class="card__chip">${String(i + 1).padStart(2, "0")}</span>
-      <img class="card__img" src="${k.gambar_url || ""}" alt="" loading="lazy">
+      <img class="card__img" src="${k.gambar || ""}" alt="" loading="lazy">
       <div class="card__body">
         <p class="card__label">${k.label} ${ARROW_ICON}</p>
         <p class="card__desc">${k.keterangan || ""}</p>

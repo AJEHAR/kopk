@@ -1,10 +1,4 @@
 {
-  "logos": [
-    { "src": "images/logo-jata-negara.png", "alt": "Jata Negara" },
-    { "src": "images/logo-mss-pahang.png", "alt": "MSS Pahang" },
-    { "src": "images/logo-tambahan.png", "alt": "Logo Tambahan", "aktif": false }
-  ],
-
   "acara": {
     "nama_penuh": "Kejohanan Olahraga Pendidikan Khas MSS Pahang",
     "nama_ringkas": "Kejohanan Olahraga PPKI MSS Pahang 2026",
@@ -14,7 +8,6 @@
     "tarikh_buka_pendaftaran": "2026-08-10T00:00:00+08:00",
     "tarikh_tutup_pendaftaran": "2026-09-01T23:59:59+08:00"
   },
-
   "kotak": [
     {
       "label": "Pendaftaran",
@@ -35,7 +28,6 @@
       "link": "https://ganti-dengan-link-keputusan"
     }
   ],
-
   "maklumat_berkaitan": [
     {
       "teks": "Garis Panduan Penyertaan Kejohanan Olahraga PPKI 2026",
@@ -44,14 +36,6 @@
     {
       "teks": "Senarai Acara dan Kategori Umur",
       "link": "https://ganti-dengan-link-senarai-acara.pdf"
-    },
-    {
-      "teks": "Peraturan Pertandingan MSSM Olahraga PPKI",
-      "link": "https://ganti-dengan-link-peraturan.pdf"
-    },
-    {
-      "teks": "Jadual Bas dan Pengangkutan Peserta",
-      "link": ""
     },
     {
       "teks": "Hubungi Urusetia: 09-XXX XXXX / urusetia@mssp.gov.my",
