@@ -145,6 +145,7 @@ function collectForm() {
   state.acara.tarikh_buka_pendaftaran = fromDatetimeLocal(document.getElementById("f-tarikh-buka").value);
   state.acara.tarikh_tutup_pendaftaran = fromDatetimeLocal(document.getElementById("f-tarikh-tutup").value);
   state.acara.gambar_hero = "images/hero.jpg"; // path tetap, gambar tukar manual di GitHub
+  state.acara.asset_version = Date.now(); // paksa cache-bust gambar setiap kali disimpan
 
   state.kotak.forEach((k, i) => {
     k.keterangan = document.getElementById(`kotak-${i}-keterangan`).value.trim();
@@ -204,6 +205,23 @@ document.getElementById("btn-connect").addEventListener("click", async () => {
 });
 
 document.getElementById("btn-save").addEventListener("click", saveAll);
+
+document.getElementById("btn-bust-cache").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-bust-cache");
+  btn.disabled = true;
+  setStatus("Menyegarkan cache gambar...", null);
+  try {
+    state.acara.asset_version = Date.now();
+    await setDoc(CONFIG_DOC, state);
+    setStatus("✓ Cache gambar disegarkan. Pelawat baru akan nampak versi terkini.", "ok");
+    renderForm();
+  } catch (err) {
+    console.error(err);
+    setStatus(`✗ ${err.message}`, "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 document.getElementById("btn-add-info").addEventListener("click", () => {
   state.maklumat_berkaitan.push({ teks: "", link: "" });

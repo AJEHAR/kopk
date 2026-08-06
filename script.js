@@ -13,7 +13,17 @@ const db = getFirestore(app);
 const EXTERNAL_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
 const ARROW_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
 
+// tambah ?v=<versi> pada URL gambar supaya browser paksa muat semula
+// bila admin update gambar (elak isu cache lama tersangkut)
+function withVersion(path, version) {
+  if (!path) return path;
+  return version ? `${path}?v=${version}` : path;
+}
+
 // Logo tetap fail statik dalam repo (jarang tukar, bukan sebahagian admin)
+// Naikkan STATIC_ASSET_VERSION ni secara manual bila anda ganti fail logo,
+// supaya browser orang lain paksa muat semula versi baru.
+const STATIC_ASSET_VERSION = 1;
 const STATIC_LOGOS = [
   { src: "images/logo-jata-negara.png", alt: "Jata Negara" },
   { src: "images/logo-mss-pahang.png", alt: "MSS Pahang" },
@@ -29,7 +39,7 @@ async function loadContent() {
 function renderLogos(containerIds) {
   const html = STATIC_LOGOS
     .filter(l => l.aktif !== false)
-    .map(l => `<img src="${l.src}" alt="${l.alt}" loading="lazy">`)
+    .map(l => `<img src="${withVersion(l.src, STATIC_ASSET_VERSION)}" alt="${l.alt}" loading="lazy">`)
     .join("");
   containerIds.forEach(id => {
     const el = document.getElementById(id);
@@ -48,17 +58,17 @@ function renderHero(acara) {
 
   if (acara.gambar_hero) {
     const bg = document.getElementById("hero-bg");
-    bg.src = acara.gambar_hero;
+    bg.src = withVersion(acara.gambar_hero, acara.asset_version);
     bg.alt = acara.nama_penuh;
   }
 }
 
-function renderCards(kotak) {
+function renderCards(kotak, version) {
   const el = document.getElementById("cards");
   el.innerHTML = kotak.map((k, i) => `
     <a class="card" href="${k.link}" target="_blank" rel="noopener noreferrer" data-reveal data-card-index="${i}">
       <span class="card__chip">${String(i + 1).padStart(2, "0")}</span>
-      <img class="card__img" src="${k.gambar || ""}" alt="" loading="lazy">
+      <img class="card__img" src="${withVersion(k.gambar, version)}" alt="" loading="lazy">
       <div class="card__body">
         <p class="card__label">${k.label} ${ARROW_ICON}</p>
         <p class="card__desc">${k.keterangan || ""}</p>
@@ -172,7 +182,7 @@ async function init() {
     const data = await loadContent();
     renderLogos(["header-logos", "footer-logos"]);
     renderHero(data.acara);
-    renderCards(data.kotak);
+    renderCards(data.kotak, data.acara.asset_version);
     renderInfoList(data.maklumat_berkaitan);
     startCountdown(data.acara);
     initMotion();
