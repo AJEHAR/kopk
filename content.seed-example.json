@@ -1,0 +1,61 @@
+{
+  "logos": [
+    { "src": "images/logo-jata-negara.png", "alt": "Jata Negara" },
+    { "src": "images/logo-mss-pahang.png", "alt": "MSS Pahang" },
+    { "src": "images/logo-tambahan.png", "alt": "Logo Tambahan", "aktif": false }
+  ],
+
+  "acara": {
+    "nama_penuh": "Kejohanan Olahraga Pendidikan Khas MSS Pahang",
+    "nama_ringkas": "Kejohanan Olahraga PPKI MSS Pahang 2026",
+    "tarikh_acara": "12 - 13 September 2026",
+    "lokasi": "Stadium Darul Makmur, Kuantan, Pahang",
+    "gambar_hero": "images/hero.jpg",
+    "tarikh_buka_pendaftaran": "2026-08-10T00:00:00+08:00",
+    "tarikh_tutup_pendaftaran": "2026-09-01T23:59:59+08:00"
+  },
+
+  "kotak": [
+    {
+      "label": "Pendaftaran",
+      "keterangan": "Daftar penyertaan sekolah dan atlet",
+      "gambar": "images/kotak-pendaftaran.jpg",
+      "link": "https://forms.gle/ganti-dengan-link-pendaftaran"
+    },
+    {
+      "label": "Call Room",
+      "keterangan": "Semakan dan panggilan atlet sebelum acara",
+      "gambar": "images/kotak-callroom.jpg",
+      "link": "https://ganti-dengan-link-call-room"
+    },
+    {
+      "label": "Keputusan Tidak Rasmi",
+      "keterangan": "Semak keputusan terkini setiap acara",
+      "gambar": "images/kotak-keputusan.jpg",
+      "link": "https://ganti-dengan-link-keputusan"
+    }
+  ],
+
+  "maklumat_berkaitan": [
+    {
+      "teks": "Garis Panduan Penyertaan Kejohanan Olahraga PPKI 2026",
+      "link": "https://ganti-dengan-link-garis-panduan.pdf"
+    },
+    {
+      "teks": "Senarai Acara dan Kategori Umur",
+      "link": "https://ganti-dengan-link-senarai-acara.pdf"
+    },
+    {
+      "teks": "Peraturan Pertandingan MSSM Olahraga PPKI",
+      "link": "https://ganti-dengan-link-peraturan.pdf"
+    },
+    {
+      "teks": "Jadual Bas dan Pengangkutan Peserta",
+      "link": ""
+    },
+    {
+      "teks": "Hubungi Urusetia: 09-XXX XXXX / urusetia@mssp.gov.my",
+      "link": ""
+    }
+  ]
+}

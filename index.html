@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kejohanan Olahraga Pendidikan Khas MSS Pahang</title>
+<meta name="description" content="Laman rasmi Kejohanan Olahraga Pendidikan Khas MSS Pahang - pendaftaran, call room, dan keputusan tidak rasmi.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <div class="logo-row" id="header-logos"></div>
+    <p class="site-header__title" id="header-title">Kejohanan Olahraga Pendidikan Khas MSS Pahang</p>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <img class="hero__bg" id="hero-bg" src="" alt="">
+  <div class="wrap hero__content">
+    <p class="hero__eyebrow" data-reveal>MSS PAHANG &middot; OLAHRAGA PENDIDIKAN KHAS</p>
+    <h1 class="hero__title" id="hero-title" data-reveal>Kejohanan Olahraga Pendidikan Khas MSS Pahang</h1>
+    <div class="hero__meta" data-reveal>
+      <span id="hero-tarikh">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span id="hero-tarikh-text">-</span>
+      </span>
+      <span id="hero-lokasi">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="hero-lokasi-text">-</span>
+      </span>
+    </div>
+
+    <div id="countdown" class="countdown" aria-live="polite" data-reveal></div>
+    <p class="countdown-caption" id="countdown-caption" data-reveal></p>
+  </div>
+
+  <div class="hero__scroll-hint">
+    <span>Skrol</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</section>
+
+<div class="lanes"></div>
+
+<section class="section section--dark">
+  <div class="wrap">
+    <div class="section__head" data-reveal>
+      <div>
+        <p class="section__eyebrow">Langkah Seterusnya</p>
+        <h2 class="section__title">Apa yang anda perlukan?</h2>
+      </div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section__head" data-reveal>
+      <div>
+        <p class="section__eyebrow">Maklumat</p>
+        <h2 class="section__title">Maklumat &amp; Pengumuman Berkaitan</h2>
+      </div>
+    </div>
+    <div class="info-panel" data-reveal>
+      <div class="info-list" id="info-list"></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="logo-row" id="footer-logos"></div>
+    <div class="site-footer__meta">
+      <span id="footer-name">Kejohanan Olahraga Pendidikan Khas MSS Pahang</span>
+      <span id="footer-lokasi"></span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script type="module" src="script.js"></script>
+</body>
+</html>

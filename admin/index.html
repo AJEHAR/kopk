@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Kejohanan Olahraga PPKI MSS Pahang</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="admin-shell">
+  <div class="admin-header">
+    <h1>Admin · Kejohanan Olahraga PPKI</h1>
+    <a href="../index.html">&larr; Kembali ke laman utama</a>
+  </div>
+
+  <!-- ============ GATE: Firebase email/password login ============ -->
+  <div id="gate" class="gate">
+    <h2>Log Masuk Admin</h2>
+    <p>Log masuk dengan emel &amp; kata laluan yang telah disediakan untuk anda.</p>
+
+    <div class="field">
+      <label for="email-input">Emel</label>
+      <input type="email" id="email-input" placeholder="nama@contoh.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="password-input">Kata Laluan</label>
+      <input type="password" id="password-input" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button type="button" id="btn-connect" class="btn btn-primary" style="width:100%; justify-content:center;">Log Masuk</button>
+    <p id="gate-status" style="margin-top:12px; font-size:13px; color:#c0392b;"></p>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div id="dashboard" style="display:none;">
+
+    <div class="panel">
+      <h2>1. Nama &amp; Maklumat Am</h2>
+      <p class="panel-desc">Nama yang dipaparkan di header dan tajuk utama laman.</p>
+      <div class="field">
+        <label>Nama Penuh <span class="hint">(dipaparkan besar di hero)</span></label>
+        <input type="text" id="f-nama-penuh">
+      </div>
+      <div class="field">
+        <label>Nama Ringkas <span class="hint">(dipaparkan di header atas)</span></label>
+        <input type="text" id="f-nama-ringkas">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Tarikh Acara <span class="hint">(teks paparan)</span></label>
+          <input type="text" id="f-tarikh-acara" placeholder="12 - 13 September 2026">
+        </div>
+        <div class="field">
+          <label>Lokasi</label>
+          <input type="text" id="f-lokasi">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>2. Tempoh Pendaftaran</h2>
+      <p class="panel-desc">Digunakan untuk countdown di laman utama. Waktu ikut zon Malaysia (GMT+8).</p>
+      <div class="field-row">
+        <div class="field">
+          <label>Tarikh &amp; Masa Buka</label>
+          <input type="datetime-local" id="f-tarikh-buka">
+        </div>
+        <div class="field">
+          <label>Tarikh &amp; Masa Tutup</label>
+          <input type="datetime-local" id="f-tarikh-tutup">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>3. Gambar Hero</h2>
+      <p class="panel-desc">Gambar besar di bahagian atas laman.</p>
+      <div class="img-field">
+        <img id="hero-preview" class="img-field__preview" alt="">
+        <div class="img-field__body">
+          <label for="hero-input">Tukar gambar hero</label>
+          <input type="file" id="hero-input" accept="image/*">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>4. Link &amp; Gambar 3 Kotak Tindakan</h2>
+      <p class="panel-desc">Pendaftaran, Call Room, dan Keputusan Tidak Rasmi.</p>
+
+      <div class="kotak-block">
+        <p class="kotak-block__title">🔗 Pendaftaran</p>
+        <div class="img-field">
+          <img id="kotak-0-preview" class="img-field__preview" alt="">
+          <div class="img-field__body">
+            <label for="kotak-0-input">Tukar gambar</label>
+            <input type="file" id="kotak-0-input" accept="image/*">
+          </div>
+        </div>
+        <div class="field"><label>Keterangan</label><input type="text" id="kotak-0-keterangan"></div>
+        <div class="field"><label>Link</label><input type="url" id="kotak-0-link"></div>
+      </div>
+
+      <div class="kotak-block">
+        <p class="kotak-block__title">🔗 Call Room</p>
+        <div class="img-field">
+          <img id="kotak-1-preview" class="img-field__preview" alt="">
+          <div class="img-field__body">
+            <label for="kotak-1-input">Tukar gambar</label>
+            <input type="file" id="kotak-1-input" accept="image/*">
+          </div>
+        </div>
+        <div class="field"><label>Keterangan</label><input type="text" id="kotak-1-keterangan"></div>
+        <div class="field"><label>Link</label><input type="url" id="kotak-1-link"></div>
+      </div>
+
+      <div class="kotak-block">
+        <p class="kotak-block__title">🔗 Keputusan Tidak Rasmi</p>
+        <div class="img-field">
+          <img id="kotak-2-preview" class="img-field__preview" alt="">
+          <div class="img-field__body">
+            <label for="kotak-2-input">Tukar gambar</label>
+            <input type="file" id="kotak-2-input" accept="image/*">
+          </div>
+        </div>
+        <div class="field"><label>Keterangan</label><input type="text" id="kotak-2-keterangan"></div>
+        <div class="field"><label>Link</label><input type="url" id="kotak-2-link"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>5. Maklumat &amp; Pengumuman</h2>
+      <p class="panel-desc">Senarai boleh-scroll di laman utama. Tambah, edit, susun semula, atau padam.</p>
+      <div id="info-rows"></div>
+      <button type="button" id="btn-add-info" class="btn btn-ghost btn-sm">+ Tambah Maklumat</button>
+    </div>
+
+    <div class="save-bar">
+      <span id="save-status" class="save-status"></span>
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="btn-logout" class="btn btn-ghost btn-sm">Log keluar</button>
+        <button type="button" id="btn-save" class="btn btn-primary">Simpan Semua Perubahan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>
