@@ -10,10 +10,10 @@
 // ============================================================
 
 export const firebaseConfig = {
-  apiKey: "GANTI_DENGAN_API_KEY",
-  authDomain: "GANTI-PROJECT-ID.firebaseapp.com",
-  projectId: "GANTI-PROJECT-ID",
-  storageBucket: "GANTI-PROJECT-ID.appspot.com",
-  messagingSenderId: "GANTI_SENDER_ID",
-  appId: "GANTI_APP_ID",
+  apiKey: "AIzaSyCrz7WgRedMbLV5G32PkyfYG28Ff7Zjz7c",
+  authDomain: "kopk-9bb9b.firebaseapp.com",
+  projectId: "kopk-9bb9b",
+  storageBucket: "kopk-9bb9b.firebasestorage.app",
+  messagingSenderId: "843287888519",
+  appId: "1:843287888519:web:b2306640597b10a5edae22",
 };
