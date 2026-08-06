@@ -198,7 +198,8 @@ document.getElementById("btn-connect").addEventListener("click", async () => {
     await signInWithEmailAndPassword(auth, email, password);
     gateStatus.textContent = "";
   } catch (err) {
-    gateStatus.textContent = "✗ Emel atau kata laluan salah.";
+    console.error("Firebase auth error:", err);
+    gateStatus.textContent = `✗ ${err.code || err.message}`;
   }
 });
 
