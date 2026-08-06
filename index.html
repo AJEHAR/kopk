@@ -6,27 +6,43 @@
 <title>Kejohanan Olahraga Pendidikan Khas MSS Pahang</title>
 <meta name="description" content="Laman rasmi Kejohanan Olahraga Pendidikan Khas MSS Pahang - pendaftaran, call room, dan keputusan tidak rasmi.">
 
+<!-- Open Graph / preview link (WhatsApp, Telegram, Facebook, dll) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kopk.syazr.com/">
+<meta property="og:title" content="Kejohanan Olahraga Pendidikan Khas MSS Pahang 2026">
+<meta property="og:description" content="18 - 20 Ogos 2026 · Sekolah Sukan Malaysia Pahang & Stadium Darul Makmur. Pendaftaran, Call Room, dan Keputusan Tidak Rasmi.">
+<meta property="og:image" content="https://kopk.syazr.com/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ms_MY">
+
+<!-- Twitter/X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kejohanan Olahraga Pendidikan Khas MSS Pahang 2026">
+<meta name="twitter:description" content="18 - 20 Ogos 2026 · Sekolah Sukan Malaysia Pahang & Stadium Darul Makmur.">
+<meta name="twitter:image" content="https://kopk.syazr.com/images/og-image.jpg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=1">
 </head>
 <body>
 
 <header class="site-header">
   <div class="site-header__inner">
     <div class="logo-row" id="header-logos"></div>
-    <p class="site-header__title" id="header-title">Kejohanan Olahraga Pendidikan Khas MSS Pahang</p>
-    <a href="admin/index.html" target="_blank" rel="noopener noreferrer" class="admin-link" title="Admin" aria-label="Buka panel admin">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </a>
   </div>
 </header>
 
 <section class="hero" id="hero">
-  <img class="hero__bg" id="hero-bg" src="" alt="">
+  <picture>
+    <source id="hero-bg-mobile-source" media="(max-width: 768px)" srcset="">
+    <img class="hero__bg" id="hero-bg" src="" alt="">
+  </picture>
+  <div class="hero__overlay" id="hero-overlay"></div>
   <div class="wrap hero__content">
     <p class="hero__eyebrow" data-reveal>MSS PAHANG &middot; OLAHRAGA PENDIDIKAN KHAS</p>
     <h1 class="hero__title" id="hero-title" data-reveal>Kejohanan Olahraga Pendidikan Khas MSS Pahang</h1>
@@ -44,21 +60,13 @@
     <div id="countdown" class="countdown" aria-live="polite" data-reveal></div>
     <p class="countdown-caption" id="countdown-caption" data-reveal></p>
   </div>
-
-  <div class="hero__scroll-hint">
-    <span>Skrol</span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-  </div>
 </section>
-
-<div class="lanes"></div>
 
 <section class="section section--dark">
   <div class="wrap">
     <div class="section__head" data-reveal>
       <div>
-        <p class="section__eyebrow">Langkah Seterusnya</p>
-        <h2 class="section__title">Apa yang anda perlukan?</h2>
+        <h2 class="section__title">Akses Pantas</h2>
       </div>
     </div>
     <div class="cards" id="cards"></div>
@@ -69,8 +77,8 @@
   <div class="wrap">
     <div class="section__head" data-reveal>
       <div>
-        <p class="section__eyebrow">Maklumat</p>
-        <h2 class="section__title">Maklumat &amp; Pengumuman Berkaitan</h2>
+        <p class="section__eyebrow">Rujukan</p>
+        <h2 class="section__title">Maklumat Lanjut</h2>
       </div>
     </div>
     <div class="info-panel" data-reveal>
@@ -81,16 +89,23 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <div class="logo-row" id="footer-logos"></div>
-    <div class="site-footer__meta">
-      <span id="footer-name">Kejohanan Olahraga Pendidikan Khas MSS Pahang</span>
-      <span id="footer-lokasi"></span>
+    <div class="site-footer__top">
+      <div class="logo-row" id="footer-logos"></div>
+      <div class="site-footer__info">
+        <p class="site-footer__name" id="footer-name">Kejohanan Olahraga Pendidikan Khas MSS Pahang</p>
+        <p class="site-footer__org">Anjuran Majlis Sukan Sekolah Pahang, Jabatan Pendidikan Negeri Pahang</p>
+      </div>
+    </div>
+    <div class="site-footer__divider"></div>
+    <div class="site-footer__bottom">
+      <span>&copy; <span id="footer-year"></span> az=r. Hak cipta terpelihara.</span>
+      <a href="admin/index.html" target="_blank" rel="noopener noreferrer" class="footer-admin-link">Log Masuk Admin</a>
     </div>
   </div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script type="module" src="script.js"></script>
+<script type="module" src="script.js?v=1"></script>
 </body>
 </html>

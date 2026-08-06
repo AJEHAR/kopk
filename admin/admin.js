@@ -36,6 +36,7 @@ const DEFAULT_STATE = {
     tarikh_buka_pendaftaran: "",
     tarikh_tutup_pendaftaran: "",
     gambar_hero: "images/hero.jpg",
+    hero_overlay_opacity: 0.85,
   },
   kotak: [
     { label: "Pendaftaran", keterangan: "", link: "", gambar: "images/kotak-pendaftaran.jpg" },
@@ -65,6 +66,15 @@ function escapeAttr(s) {
   return String(s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+// jaring keselamatan: auto-tambah https:// kalau admin lupa taip semasa simpan
+function normalizeUrl(url) {
+  if (!url) return url;
+  const trimmed = url.trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith("#") || trimmed.startsWith("/")) return trimmed;
+  return `https://${trimmed}`;
+}
+
 // ---------------- load ----------------
 async function loadContent() {
   const snap = await getDoc(CONFIG_DOC);
@@ -83,6 +93,9 @@ function renderForm() {
   document.getElementById("f-tarikh-tutup").value = toDatetimeLocal(state.acara.tarikh_tutup_pendaftaran);
 
   document.getElementById("hero-preview").src = IMAGE_PATHS.hero + "?t=" + Date.now();
+  const opacityPct = Math.round((typeof state.acara.hero_overlay_opacity === "number" ? state.acara.hero_overlay_opacity : 0.85) * 100);
+  document.getElementById("f-hero-opacity").value = opacityPct;
+  document.getElementById("hero-opacity-value").textContent = opacityPct + "%";
 
   state.kotak.forEach((k, i) => {
     document.getElementById(`kotak-${i}-keterangan`).value = k.keterangan || "";
@@ -145,11 +158,12 @@ function collectForm() {
   state.acara.tarikh_buka_pendaftaran = fromDatetimeLocal(document.getElementById("f-tarikh-buka").value);
   state.acara.tarikh_tutup_pendaftaran = fromDatetimeLocal(document.getElementById("f-tarikh-tutup").value);
   state.acara.gambar_hero = "images/hero.jpg"; // path tetap, gambar tukar manual di GitHub
+  state.acara.hero_overlay_opacity = Number(document.getElementById("f-hero-opacity").value) / 100;
   state.acara.asset_version = Date.now(); // paksa cache-bust gambar setiap kali disimpan
 
   state.kotak.forEach((k, i) => {
     k.keterangan = document.getElementById(`kotak-${i}-keterangan`).value.trim();
-    k.link = document.getElementById(`kotak-${i}-link`).value.trim();
+    k.link = normalizeUrl(document.getElementById(`kotak-${i}-link`).value.trim());
     k.gambar = IMAGE_PATHS["kotak" + i].replace("../", ""); // path tetap
   });
 }
@@ -162,6 +176,7 @@ async function saveAll() {
 
   try {
     collectForm();
+    state.maklumat_berkaitan.forEach(item => { item.link = normalizeUrl(item.link); });
     await setDoc(CONFIG_DOC, state);
     setStatus("✓ Berjaya disimpan. Laman utama akan terus update.", "ok");
     renderForm();
@@ -205,6 +220,10 @@ document.getElementById("btn-connect").addEventListener("click", async () => {
 });
 
 document.getElementById("btn-save").addEventListener("click", saveAll);
+
+document.getElementById("f-hero-opacity").addEventListener("input", (e) => {
+  document.getElementById("hero-opacity-value").textContent = e.target.value + "%";
+});
 
 document.getElementById("btn-bust-cache").addEventListener("click", async () => {
   const btn = document.getElementById("btn-bust-cache");

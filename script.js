@@ -20,6 +20,17 @@ function withVersion(path, version) {
   return version ? `${path}?v=${version}` : path;
 }
 
+// jaring keselamatan: kalau admin lupa taip https:// depan link,
+// browser akan anggap ia path relatif (contoh: kopk.syazr.com/callroom.syazr.com).
+// auto-tambah https:// supaya link luar sentiasa betul.
+function normalizeUrl(url) {
+  if (!url) return url;
+  const trimmed = url.trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith("#") || trimmed.startsWith("/")) return trimmed;
+  return `https://${trimmed}`;
+}
+
 // Logo tetap fail statik dalam repo (jarang tukar, bukan sebahagian admin)
 // Naikkan STATIC_ASSET_VERSION ni secara manual bila anda ganti fail logo,
 // supaya browser orang lain paksa muat semula versi baru.
@@ -49,25 +60,31 @@ function renderLogos(containerIds) {
 
 function renderHero(acara) {
   document.title = acara.nama_penuh;
-  document.getElementById("header-title").textContent = acara.nama_ringkas || acara.nama_penuh;
   document.getElementById("hero-title").textContent = acara.nama_penuh;
   document.getElementById("hero-tarikh-text").textContent = acara.tarikh_acara;
   document.getElementById("hero-lokasi-text").textContent = acara.lokasi;
   document.getElementById("footer-name").textContent = acara.nama_penuh;
-  document.getElementById("footer-lokasi").textContent = acara.lokasi;
+  document.getElementById("footer-year").textContent = new Date().getFullYear();
 
   if (acara.gambar_hero) {
     const bg = document.getElementById("hero-bg");
+    const mobileSource = document.getElementById("hero-bg-mobile-source");
     bg.src = withVersion(acara.gambar_hero, acara.asset_version);
     bg.alt = acara.nama_penuh;
+    // versi mobile: fail statik "hero-mobile.jpg" (crop khas potret), sama folder
+    mobileSource.srcset = withVersion("images/hero-mobile.jpg", acara.asset_version);
   }
+
+  // kegelapan latar hero - boleh dilaraskan dari /admin (default 0.85 jika belum diset)
+  const overlay = document.getElementById("hero-overlay");
+  const opacity = typeof acara.hero_overlay_opacity === "number" ? acara.hero_overlay_opacity : 0.85;
+  overlay.style.opacity = opacity;
 }
 
 function renderCards(kotak, version) {
   const el = document.getElementById("cards");
   el.innerHTML = kotak.map((k, i) => `
-    <a class="card" href="${k.link}" target="_blank" rel="noopener noreferrer" data-reveal data-card-index="${i}">
-      <span class="card__chip">${String(i + 1).padStart(2, "0")}</span>
+    <a class="card" href="${normalizeUrl(k.link)}" target="_blank" rel="noopener noreferrer" data-reveal data-card-index="${i}">
       <img class="card__img" src="${withVersion(k.gambar, version)}" alt="" loading="lazy">
       <div class="card__body">
         <p class="card__label">${k.label} ${ARROW_ICON}</p>
@@ -82,7 +99,7 @@ function renderInfoList(items) {
   el.innerHTML = (items || []).map(item => {
     const hasLink = item.link && item.link.trim().length > 0;
     const tag = hasLink ? "a" : "div";
-    const attrs = hasLink ? `href="${item.link}" target="_blank" rel="noopener noreferrer"` : "";
+    const attrs = hasLink ? `href="${normalizeUrl(item.link)}" target="_blank" rel="noopener noreferrer"` : "";
     return `
       <${tag} class="info-item ${hasLink ? "info-item--link" : ""}" ${attrs}>
         <span class="info-item__text"><span class="info-item__dot"></span>${item.teks}</span>

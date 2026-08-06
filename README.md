@@ -99,6 +99,44 @@ kena upload fail ke GitHub:
 
 ---
 
+## Preview link (WhatsApp/Telegram/Facebook)
+
+Bila link `kopk.syazr.com` di-paste dalam app lain, ia akan papar kad preview (gambar +
+tajuk + keterangan) — ini dikawal oleh tag `<meta property="og:...">` dalam `<head>`
+fail `index.html`.
+
+**Penting:** tag ni **statik** (bukan auto dari Firestore/`/admin`), sebab app macam
+WhatsApp/Telegram tak jalankan JavaScript semasa scan link — mereka cuma baca HTML terus.
+Kalau nama/tarikh acara berubah **besar**, kemaskini manual bahagian ni dalam `index.html`:
+
+```html
+<meta property="og:title" content="...">
+<meta property="og:description" content="...">
+```
+
+Gambar preview (`images/og-image.jpg`, saiz 1200×630) juga boleh ditukar — upload fail
+baru dengan nama yang sama ke `images/`.
+
+**Nota cache platform:** WhatsApp/Facebook/Telegram masing-masing **cache** preview lama
+buat beberapa hari. Kalau anda update tag/gambar tapi preview lama masih papar:
+- Facebook/WhatsApp: guna [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) → paste URL → "Scrape Again"
+- Telegram: hantar link dengan `?` tambahan di hujung (contoh `kopk.syazr.com/?v=2`) untuk paksa scan baru
+
+## Cache CSS/JS (untuk anda sendiri semasa buat perubahan kod)
+
+`index.html` dan `admin/index.html` rujuk `styles.css`, `script.js`, `admin.css`, `admin.js`
+dengan `?v=1` di hujung URL. Setiap kali anda (atau saya) push perubahan pada fail-fail ni,
+**naikkan nombor `v=` tu** (contoh `?v=2`) di SEMUA tempat ia muncul, supaya semua pelawat
+terus dapat versi terkini tanpa tunggu cache GitHub Pages luput (~10 minit).
+
+Tempat yang perlu dikemaskini bersama:
+- `index.html` → `styles.css?v=` dan `script.js?v=`
+- `admin/index.html` → `admin.css?v=` dan `admin.js?v=`
+- `admin/admin.css` → baris `@import url("../styles.css?v=")`
+
+**Data (Firestore) dan gambar tak perlukan ini** — data sentiasa live, gambar ada sistem
+cache-bust sendiri (`asset_version`, laraskan dari `/admin`).
+
 ## Struktur fail
 
 ```
