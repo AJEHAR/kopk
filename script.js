@@ -60,7 +60,7 @@ function renderLogos(containerIds) {
 }
 
 function renderHero(acara) {
-  document.title = acara.nama_penuh;
+  document.title = "az=R - KOPK";
   document.getElementById("hero-eyebrow").textContent = acara.label_kecil || "";
   document.getElementById("hero-title").textContent = acara.nama_penuh;
   document.getElementById("hero-tarikh-text").textContent = acara.tarikh_acara;
