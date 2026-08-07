@@ -246,7 +246,7 @@ document.getElementById("btn-bust-cache").addEventListener("click", async () => 
 });
 
 document.getElementById("btn-add-info").addEventListener("click", () => {
-  state.maklumat_berkaitan.push({ teks: "", link: "" });
+  state.maklumat_berkaitan.unshift({ teks: "", link: "" }); // masuk ATAS - boleh susun semula guna ↑↓ jika perlu
   renderInfoList();
 });
 

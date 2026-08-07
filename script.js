@@ -11,6 +11,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const EXTERNAL_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
+const INFO_ICON = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1"/></svg>`;
 const ARROW_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
 
 // tambah ?v=<versi> pada URL gambar supaya browser paksa muat semula
@@ -103,7 +104,7 @@ function renderInfoList(items) {
     const attrs = hasLink ? `href="${normalizeUrl(item.link)}" target="_blank" rel="noopener noreferrer"` : "";
     return `
       <${tag} class="info-item ${hasLink ? "info-item--link" : ""}" ${attrs}>
-        <span class="info-item__text"><span class="info-item__dot"></span>${item.teks}</span>
+        <span class="info-item__text"><span class="info-item__icon-badge">${INFO_ICON}</span>${item.teks}</span>
         ${hasLink ? `<span class="info-item__icon">${EXTERNAL_ICON}</span>` : ""}
       </${tag}>
     `;
