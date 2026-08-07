@@ -6,5 +6,5 @@
 // dalam Code.gs semasa anda deploy di script.google.com.
 // ============================================================
 
-export const APPS_SCRIPT_URL = "GANTI_DENGAN_WEB_APP_URL_APPS_SCRIPT";
-export const APPS_SCRIPT_SECRET = "GANTI_DENGAN_KOD_RAHSIA_ANDA";
+export const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw92FEf44D4akxGGE8KhEtUEyTCoPfybBQqOWbuPk430aXNLCzDXEv7haUYWTbmI_mFMA/exec";
+export const APPS_SCRIPT_SECRET = "KOPK_WEB_APP";
