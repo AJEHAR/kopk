@@ -31,6 +31,7 @@ const DEFAULT_STATE = {
   acara: {
     nama_penuh: "Kejohanan Olahraga Pendidikan Khas MSS Pahang",
     nama_ringkas: "Kejohanan Olahraga PPKI MSS Pahang",
+    label_kecil: "MSS PAHANG · OLAHRAGA PENDIDIKAN KHAS",
     tarikh_acara: "",
     lokasi: "",
     tarikh_buka_pendaftaran: "",
@@ -85,6 +86,7 @@ async function loadContent() {
 
 // ---------------- render form from state ----------------
 function renderForm() {
+  document.getElementById("f-label-kecil").value = state.acara.label_kecil || "";
   document.getElementById("f-nama-penuh").value = state.acara.nama_penuh || "";
   document.getElementById("f-nama-ringkas").value = state.acara.nama_ringkas || "";
   document.getElementById("f-tarikh-acara").value = state.acara.tarikh_acara || "";
@@ -151,6 +153,7 @@ function renderInfoList() {
 
 // ---------------- collect form back into state ----------------
 function collectForm() {
+  state.acara.label_kecil = document.getElementById("f-label-kecil").value.trim();
   state.acara.nama_penuh = document.getElementById("f-nama-penuh").value.trim();
   state.acara.nama_ringkas = document.getElementById("f-nama-ringkas").value.trim();
   state.acara.tarikh_acara = document.getElementById("f-tarikh-acara").value.trim();
