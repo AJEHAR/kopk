@@ -12,6 +12,7 @@ import {
   getFirestore, doc, getDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { firebaseConfig } from "../firebase-config.js";
+import { APPS_SCRIPT_URL, APPS_SCRIPT_SECRET } from "../apps-script-config.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -65,6 +66,39 @@ function setStatus(msg, kind) {
 }
 function escapeAttr(s) {
   return String(s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+// ---------------- upload dokumen (via Apps Script -> Google Drive) ----------------
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(",")[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+async function uploadDocument(file) {
+  if (APPS_SCRIPT_URL.startsWith("GANTI_")) {
+    throw new Error("Apps Script belum disetup lagi (rujuk README.md).");
+  }
+  const base64 = await fileToBase64(file);
+  const payload = {
+    secret: APPS_SCRIPT_SECRET,
+    filename: file.name,
+    mimeType: file.type || "application/octet-stream",
+    base64,
+  };
+  // guna text/plain (bukan application/json) supaya browser elak "preflight"
+  // CORS - Apps Script Web App tak handle preflight OPTIONS dengan baik
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "Upload gagal.");
+  return data; // { url, name }
 }
 
 // jaring keselamatan: auto-tambah https:// kalau admin lupa taip semasa simpan
@@ -248,6 +282,30 @@ document.getElementById("btn-bust-cache").addEventListener("click", async () => 
 document.getElementById("btn-add-info").addEventListener("click", () => {
   state.maklumat_berkaitan.unshift({ teks: "", link: "" }); // masuk ATAS - boleh susun semula guna ↑↓ jika perlu
   renderInfoList();
+});
+
+document.getElementById("doc-upload-input").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById("doc-upload-status");
+
+  if (file.size > 15 * 1024 * 1024) {
+    statusEl.textContent = "✗ Fail terlalu besar (had 15MB).";
+    e.target.value = "";
+    return;
+  }
+
+  statusEl.textContent = "Memuat naik dokumen ke Google Drive...";
+  try {
+    const result = await uploadDocument(file);
+    state.maklumat_berkaitan.unshift({ teks: result.name, link: result.url });
+    renderInfoList();
+    statusEl.textContent = "✓ Dokumen dimuat naik. Jangan lupa klik \"Simpan Semua Perubahan\" di bawah untuk sahkan.";
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = `✗ ${err.message}`;
+  }
+  e.target.value = "";
 });
 
 document.getElementById("btn-logout").addEventListener("click", () => signOut(auth));

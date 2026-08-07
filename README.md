@@ -99,6 +99,47 @@ kena upload fail ke GitHub:
 
 ---
 
+## Upload Dokumen (PDF/gambar) terus dari Admin
+
+AJK boleh upload dokumen rasmi (garis panduan, senarai acara, dsb.) terus dari `/admin`
+tanpa perlu akaun GitHub — fail disimpan ke **Google Drive anda** melalui Google Apps
+Script (percuma, tiada kad kredit).
+
+### Setup (buat sekali sahaja)
+
+1. **Cipta folder Drive** — buka [drive.google.com](https://drive.google.com) → cipta
+   folder baru (contoh: "Dokumen KOPK") → buka folder tu → salin **Folder ID** dari URL:
+   ```
+   https://drive.google.com/drive/folders/INI_FOLDER_ID
+   ```
+
+2. **Cipta Apps Script** — buka [script.google.com](https://script.google.com) →
+   **New project** → padam kod default → salin SEMUA kod dari fail
+   `apps-script/Code.gs` dalam repo ini → tampal.
+
+3. **Isi konfigurasi** dalam kod yang ditampal tadi:
+   - `SECRET_KEY` — apa-apa kata laluan unik anda cipta sendiri (contoh: `"kopk-rahsia-2026"`)
+   - `FOLDER_ID` — Folder ID dari langkah 1
+
+4. **Deploy** → klik **Deploy → New deployment** → ikon gear (⚙️) pilih **Web app**:
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+   - Klik **Deploy** → salin **Web app URL** yang diberikan (akan minta authorize sekali — tu normal, klik "Advanced → Go to [nama project]")
+
+5. **Masukkan dalam repo** — buka fail `apps-script-config.js`, gantikan:
+   - `APPS_SCRIPT_URL` — URL dari langkah 4
+   - `APPS_SCRIPT_SECRET` — **SAMA PERSIS** dengan `SECRET_KEY` langkah 3
+
+### Cara AJK guna lepas setup siap
+
+1. Buka `/admin` → panel **"5. Maklumat & Pengumuman"**
+2. Klik **"📎 Upload Dokumen"** → pilih fail (PDF/gambar, had 15MB)
+3. Tunggu ~5-10 saat → item baru automatik masuk senarai dengan link Drive
+4. Edit teks paparan jika perlu → klik **"Simpan Semua Perubahan"**
+
+**Nota:** semua dokumen akan masuk folder Drive **anda** (bukan Drive AJK masing-masing) —
+anda jadi penyimpan rasmi fail-fail ni. Storan guna kuota Drive akaun anda.
+
 ## Preview link (WhatsApp/Telegram/Facebook)
 
 Bila link `kopk.syazr.com` di-paste dalam app lain, ia akan papar kad preview (gambar +
@@ -144,6 +185,9 @@ cache-bust sendiri (`asset_version`, laraskan dari `/admin`).
 ├── styles.css                       ← design (tak perlu sentuh)
 ├── script.js                          ← baca data dari Firestore (tak perlu sentuh)
 ├── firebase-config.js                  ← GANTI dengan config project Firebase anda
+├── apps-script-config.js                 ← GANTI dengan URL & kunci Apps Script anda
+├── apps-script/
+│   └── Code.gs                             ← Salin ke script.google.com (rujuk panduan atas)
 ├── admin/
 │   ├── index.html                        ← dashboard admin
 │   ├── admin.js                            ← logik login + simpan data (tak perlu sentuh)

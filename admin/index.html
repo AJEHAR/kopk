@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
-<link rel="stylesheet" href="admin.css?v=7">
+<link rel="stylesheet" href="admin.css?v=8">
 </head>
 <body>
 
@@ -145,7 +145,14 @@
       <h2>5. Maklumat &amp; Pengumuman</h2>
       <p class="panel-desc">Senarai boleh-scroll di laman utama. Maklumat baru automatik masuk paling atas — guna butang ↑↓ untuk susun semula (contoh: nak "pin" sesuatu kekal di atas/bawah).</p>
       <div id="info-rows"></div>
-      <button type="button" id="btn-add-info" class="btn btn-ghost btn-sm">+ Tambah Maklumat</button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <button type="button" id="btn-add-info" class="btn btn-ghost btn-sm">+ Tambah Maklumat</button>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer; margin:0;">
+          📎 Upload Dokumen (PDF/gambar)
+          <input type="file" id="doc-upload-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;">
+        </label>
+      </div>
+      <p id="doc-upload-status" style="font-size:13px; color:var(--ink-soft); margin-top:10px;"></p>
     </div>
 
     <div class="save-bar">
@@ -158,6 +165,6 @@
   </div>
 </div>
 
-<script type="module" src="admin.js?v=6"></script>
+<script type="module" src="admin.js?v=8"></script>
 </body>
 </html>
