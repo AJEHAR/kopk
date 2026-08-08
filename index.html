@@ -13,6 +13,15 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#0B1F3A">
+
+<!-- Google Analytics (GA4) - GANTI G-XXXXXXXXXX dengan Measurement ID sebenar anda -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
 <meta name="description" content="Laman rasmi Kejohanan Olahraga Pendidikan Khas MSS Pahang - pendaftaran, call room, dan keputusan tidak rasmi.">
 
 <!-- Open Graph / preview link (WhatsApp, Telegram, Facebook, dll) -->
@@ -36,7 +45,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
 
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 
@@ -68,6 +77,10 @@
 
     <div id="countdown" class="countdown" aria-live="polite" data-reveal></div>
     <p class="countdown-caption" id="countdown-caption" data-reveal></p>
+    <a href="#" id="btn-add-calendar" class="btn-calendar" data-reveal target="_blank" rel="noopener noreferrer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M12 14v4M10 16h4"/></svg>
+      <span id="label-tambah-kalendar">Tambah ke Kalendar</span>
+    </a>
   </div>
 </section>
 
@@ -75,10 +88,14 @@
   <div class="wrap">
     <div class="section__head" data-reveal>
       <div>
-        <h2 class="section__title">Akses Pantas</h2>
+        <h2 class="section__title" id="label-akses-pantas">Akses Pantas</h2>
       </div>
     </div>
-    <div class="cards" id="cards"></div>
+    <div class="cards" id="cards">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
   </div>
 </section>
 
@@ -86,12 +103,60 @@
   <div class="wrap">
     <div class="section__head" data-reveal>
       <div>
-        <h2 class="section__title">Maklumat Terkini</h2>
+        <h2 class="section__title" id="label-maklumat-terkini">Maklumat Terkini</h2>
       </div>
     </div>
     <div class="info-panel" data-reveal>
-      <div class="info-list" id="info-list"></div>
+      <div class="info-list" id="info-list">
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+      </div>
     </div>
+  </div>
+</section>
+
+<section class="section section--dark" id="faq-section">
+  <div class="wrap">
+    <div class="section__head" data-reveal>
+      <div>
+        <h2 class="section__title" id="label-faq-title">Soalan Lazim</h2>
+      </div>
+    </div>
+    <div class="faq-list" id="faq-list" data-reveal></div>
+  </div>
+</section>
+
+<section class="section" id="feedback-section">
+  <div class="wrap">
+    <div class="section__head" data-reveal>
+      <div>
+        <h2 class="section__title" id="label-feedback-title">Ada Soalan / Maklum Balas?</h2>
+      </div>
+    </div>
+    <form class="feedback-form" id="feedback-form" data-reveal>
+      <div class="field-row">
+        <div class="field">
+          <label id="label-fb-nama">Nama <span class="hint">(pilihan)</span></label>
+          <input type="text" id="fb-nama" autocomplete="name">
+        </div>
+        <div class="field">
+          <label id="label-fb-emel">Emel <span class="hint">(pilihan)</span></label>
+          <input type="email" id="fb-emel" autocomplete="email">
+        </div>
+      </div>
+      <div class="field">
+        <label id="label-fb-mesej">Mesej</label>
+        <textarea id="fb-mesej" rows="4" required></textarea>
+      </div>
+      <!-- honeypot: tersembunyi dari manusia, perangkap bot -->
+      <div class="feedback-form__honeypot" aria-hidden="true">
+        <label for="fb-honeypot">Jangan isi medan ini</label>
+        <input type="text" id="fb-honeypot" name="website" tabindex="-1" autocomplete="off">
+      </div>
+      <button type="submit" class="btn-feedback-submit" id="label-fb-submit">Hantar Mesej</button>
+      <p id="feedback-status" class="feedback-status"></p>
+    </form>
   </div>
 </section>
 
@@ -101,19 +166,19 @@
       <div class="logo-row" id="footer-logos"></div>
       <div class="site-footer__info">
         <p class="site-footer__name" id="footer-name">Kejohanan Olahraga Pendidikan Khas MSS Pahang</p>
-        <p class="site-footer__org">Anjuran Majlis Sukan Sekolah Pahang, Jabatan Pendidikan Negeri Pahang</p>
+        <p class="site-footer__org" id="footer-org">Anjuran Majlis Sukan Sekolah Pahang, Jabatan Pendidikan Negeri Pahang</p>
       </div>
     </div>
     <div class="site-footer__divider"></div>
     <div class="site-footer__bottom">
-      <span>&copy; <span id="footer-year"></span> az=r. Hak cipta terpelihara.</span>
-      <a href="admin/index.html" target="_blank" rel="noopener noreferrer" class="footer-admin-link">Log Masuk Admin</a>
+      <span>&copy; <span id="footer-year"></span> <span id="footer-copyright-text">az=r. Hak cipta terpelihara.</span></span>
+      <a href="admin/index.html" target="_blank" rel="noopener noreferrer" class="footer-admin-link" id="label-admin-link">Log Masuk Admin</a>
     </div>
   </div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script type="module" src="script.js?v=8"></script>
+<script type="module" src="script.js?v=11"></script>
 </body>
 </html>

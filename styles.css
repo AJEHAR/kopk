@@ -178,6 +178,18 @@ a { color: inherit; }
   letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.6);
 }
 .countdown-caption { margin: 16px 0 0; font-size: 14px; color: rgba(255,255,255,0.65); text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.btn-calendar {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 18px;
+  font-size: 13.5px; font-weight: 600;
+  color: #fff; text-decoration: none;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.24);
+  backdrop-filter: blur(10px);
+  padding: 10px 18px; border-radius: 100px;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.btn-calendar:hover, .btn-calendar:focus-visible { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
 .countdown-caption strong { color: rgba(255,255,255,0.92); font-weight: 600; }
 .countdown.is-closed .countdown__num { color: var(--teal-300); }
 
@@ -319,6 +331,99 @@ a { color: inherit; }
 /* ============================================
    FOOTER
    ============================================ */
+/* ============================================
+   SKELETON LOADING (papar semasa tunggu Firestore)
+   ============================================ */
+@keyframes skeleton-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton-card {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.14) 37%, rgba(255,255,255,0.06) 63%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+.skeleton-row {
+  height: 66px;
+  border-radius: 10px;
+  margin: 10px;
+  background: linear-gradient(90deg, var(--paper-dim) 25%, #fff 37%, var(--paper-dim) 63%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ============================================
+   FAQ ACCORDION
+   ============================================ */
+.faq-list { display: flex; flex-direction: column; gap: 10px; }
+.faq-item {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+.faq-item__question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.faq-item__question svg { flex: none; transition: transform 0.3s ease; opacity: 0.6; }
+.faq-item.is-open .faq-item__question svg { transform: rotate(180deg); }
+.faq-item__answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+  padding: 0 22px;
+}
+.faq-item.is-open .faq-item__answer { max-height: 400px; padding: 0 22px 20px; }
+.faq-item__answer p { margin: 0; font-size: 14.5px; line-height: 1.65; color: rgba(255,255,255,0.72); }
+
+/* ============================================
+   FEEDBACK FORM
+   ============================================ */
+.feedback-form { max-width: 640px; }
+.feedback-form .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.feedback-form .field { margin-bottom: 16px; }
+.feedback-form .field label {
+  display: block; font-size: 13px; font-weight: 600; color: var(--ink);
+  margin-bottom: 6px;
+}
+.feedback-form .field .hint { font-weight: 400; color: var(--ink-soft); }
+.feedback-form input[type="text"],
+.feedback-form input[type="email"],
+.feedback-form textarea {
+  width: 100%; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--paper-dim);
+  font-family: var(--font-body); font-size: 14.5px; color: var(--ink);
+  resize: vertical;
+}
+.feedback-form input:focus, .feedback-form textarea:focus { background: #fff; border-color: var(--teal-500); outline: none; }
+.feedback-form__honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.btn-feedback-submit {
+  font-family: var(--font-body); font-weight: 600; font-size: 14.5px;
+  padding: 13px 28px; border-radius: 100px; border: none; cursor: pointer;
+  background: var(--navy-950); color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-feedback-submit:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(11,31,58,0.35); }
+.btn-feedback-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.feedback-status { margin: 14px 0 0; font-size: 13.5px; color: var(--ink-soft); }
+.feedback-status.is-ok { color: var(--teal-500); font-weight: 600; }
+.feedback-status.is-err { color: #c0392b; font-weight: 600; }
+
 .site-footer {
   background: var(--navy-950);
   color: rgba(255,255,255,0.68);
@@ -374,6 +479,7 @@ a { color: inherit; }
 @media (max-width: 640px) {
   .site-header__inner { padding: 12px 18px; }
   .countdown__cell { min-width: 66px; padding: 12px 8px 10px; }
+  .feedback-form .field-row { grid-template-columns: 1fr; gap: 0; }
 
   /* 3 kotak jadi padat sebaris - elak scroll panjang di phone */
   .cards {

@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Admin — Kejohanan Olahraga PPKI MSS Pahang</title>
+<title>az=R - KOPK Admin</title>
 <link rel="icon" type="image/x-icon" href="../favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32x32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
-<link rel="stylesheet" href="admin.css?v=8">
+<link rel="stylesheet" href="admin.css?v=13">
 </head>
 <body>
 
@@ -40,6 +40,17 @@
   <!-- ============ DASHBOARD ============ -->
   <div id="dashboard" style="display:none;">
 
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab-btn is-active" data-tab="am" role="tab">Am &amp; Tarikh</button>
+      <button type="button" class="tab-btn" data-tab="hero" role="tab">Gambar Hero</button>
+      <button type="button" class="tab-btn" data-tab="kotak" role="tab">3 Kotak</button>
+      <button type="button" class="tab-btn" data-tab="maklumat" role="tab">Maklumat</button>
+      <button type="button" class="tab-btn" data-tab="faq" role="tab">FAQ</button>
+      <button type="button" class="tab-btn" data-tab="feedback" role="tab">Maklum Balas</button>
+      <button type="button" class="tab-btn" data-tab="wording" role="tab">Wording</button>
+    </div>
+
+    <div class="tab-panel is-active" data-tab-panel="am">
     <div class="panel">
       <h2>1. Nama &amp; Maklumat Am</h2>
       <p class="panel-desc">Nama yang dipaparkan di header dan tajuk utama laman.</p>
@@ -81,7 +92,9 @@
         </div>
       </div>
     </div>
+    </div>
 
+    <div class="tab-panel" data-tab-panel="hero">
     <div class="panel">
       <h2>3. Gambar Hero</h2>
       <p class="panel-desc">Untuk tukar, upload gambar baru ke <code>images/hero.jpg</code> terus di GitHub (guna nama fail yang sama) — bukan dari sini. Lepas upload gambar baru, klik butang di bawah supaya semua pelawat terus nampak versi terkini (bukan gambar lama tersimpan dalam cache browser).</p>
@@ -99,7 +112,9 @@
       </div>
       <button type="button" id="btn-bust-cache" class="btn btn-ghost btn-sm">🔄 Segarkan Cache Gambar (lepas tukar gambar di GitHub)</button>
     </div>
+    </div>
 
+    <div class="tab-panel" data-tab-panel="kotak">
     <div class="panel">
       <h2>4. Link &amp; Gambar 3 Kotak Tindakan</h2>
       <p class="panel-desc">Pendaftaran, Call Room, dan Keputusan Tidak Rasmi.</p>
@@ -140,7 +155,9 @@
         <div class="field"><label>Link</label><input type="url" id="kotak-2-link"></div>
       </div>
     </div>
+    </div>
 
+    <div class="tab-panel" data-tab-panel="maklumat">
     <div class="panel">
       <h2>5. Maklumat &amp; Pengumuman</h2>
       <p class="panel-desc">Senarai boleh-scroll di laman utama. Maklumat baru automatik masuk paling atas — guna butang ↑↓ untuk susun semula (contoh: nak "pin" sesuatu kekal di atas/bawah).</p>
@@ -154,6 +171,68 @@
       </div>
       <p id="doc-upload-status" style="font-size:13px; color:var(--ink-soft); margin-top:10px;"></p>
     </div>
+    </div>
+
+    <div class="tab-panel" data-tab-panel="faq">
+    <div class="panel">
+      <h2>6. Soalan Lazim (FAQ)</h2>
+      <p class="panel-desc">Dipaparkan sebagai accordion (boleh klik buka/tutup) di laman utama. Kosongkan semua untuk sembunyikan seksyen ni terus.</p>
+      <div id="faq-rows"></div>
+      <button type="button" id="btn-add-faq" class="btn btn-ghost btn-sm">+ Tambah Soalan</button>
+    </div>
+    </div>
+
+    <div class="tab-panel" data-tab-panel="feedback">
+    <div class="panel">
+      <h2>7. Maklum Balas Pelawat</h2>
+      <p class="panel-desc">Mesej yang dihantar pelawat melalui borang di laman utama. Senarai ni tak disimpan bila anda klik "Simpan Semua Perubahan" (ia terus tersimpan bila pelawat hantar) - cuma untuk anda BACA &amp; padam.</p>
+      <div id="feedback-list"></div>
+    </div>
+    </div>
+
+    <div class="tab-panel" data-tab-panel="wording">
+    <div class="panel">
+      <h2>8. Wording Laman (semua teks kelihatan)</h2>
+      <p class="panel-desc">Semua tajuk seksyen, label borang, dan footer boleh ditukar di sini. <strong>Kekecualian:</strong> meta tag (tajuk tab browser sebelum data load, preview link WhatsApp/Facebook) kekal statik dalam kod — bot tak boleh baca Firestore.</p>
+
+      <div class="field">
+        <label>Tajuk Tab Browser</label>
+        <input type="text" id="t-tab-title">
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Tajuk "Akses Pantas"</label><input type="text" id="t-akses-pantas"></div>
+        <div class="field"><label>Tajuk "Maklumat Terkini"</label><input type="text" id="t-maklumat-terkini"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Tajuk Seksyen FAQ</label><input type="text" id="t-faq-title"></div>
+        <div class="field"><label>Tajuk Seksyen Maklum Balas</label><input type="text" id="t-feedback-title"></div>
+      </div>
+      <div class="field">
+        <label>Teks Butang "Tambah ke Kalendar"</label>
+        <input type="text" id="t-tambah-kalendar">
+      </div>
+
+      <p style="font-weight:600; font-size:13px; margin:20px 0 10px; color:var(--navy-950);">Label Borang Maklum Balas</p>
+      <div class="field-row">
+        <div class="field"><label>Label "Nama"</label><input type="text" id="t-fb-nama"></div>
+        <div class="field"><label>Label "Emel"</label><input type="text" id="t-fb-emel"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Label "Mesej"</label><input type="text" id="t-fb-mesej"></div>
+        <div class="field"><label>Teks Butang Hantar</label><input type="text" id="t-fb-submit"></div>
+      </div>
+
+      <p style="font-weight:600; font-size:13px; margin:20px 0 10px; color:var(--navy-950);">Footer</p>
+      <div class="field">
+        <label>Baris Kredit Penganjur</label>
+        <input type="text" id="t-footer-org">
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Teks Hak Cipta <span class="hint">(selepas tahun)</span></label><input type="text" id="t-footer-copyright"></div>
+        <div class="field"><label>Teks Link Admin</label><input type="text" id="t-admin-link"></div>
+      </div>
+    </div>
+    </div>
 
     <div class="save-bar">
       <span id="save-status" class="save-status"></span>
@@ -165,6 +244,6 @@
   </div>
 </div>
 
-<script type="module" src="admin.js?v=8"></script>
+<script type="module" src="admin.js?v=13"></script>
 </body>
 </html>

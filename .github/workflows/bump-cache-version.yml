@@ -1,0 +1,57 @@
+name: Auto naikkan versi cache CSS/JS
+
+# Jalan automatik bila styles.css / script.js / admin.css / admin.js berubah.
+# Naikkan nombor ?v= di semua tempat yang perlu, commit balik.
+# Tak akan "infinite loop" - trigger cuma pada fail CSS/JS asal,
+# bukan pada index.html (yang commit ni sendiri akan ubah).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "styles.css"
+      - "script.js"
+      - "admin/admin.css"
+      - "admin/admin.js"
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Naikkan nombor versi
+        run: |
+          python3 << 'PYEOF'
+          import re
+
+          files = ["index.html", "admin/index.html", "admin/admin.css"]
+
+          # cari versi semasa (nombor tertinggi ?v=N yang wujud)
+          current = 0
+          for f in files:
+              text = open(f).read()
+              for m in re.findall(r"\?v=(\d+)", text):
+                  current = max(current, int(m))
+
+          new_version = current + 1
+          print(f"Versi lama: v={current} -> Versi baru: v={new_version}")
+
+          for f in files:
+              text = open(f).read()
+              text2 = re.sub(r"\?v=\d+", f"?v={new_version}", text)
+              if text2 != text:
+                  open(f, "w").write(text2)
+                  print(f"Dikemaskini: {f}")
+          PYEOF
+
+      - name: Commit & push jika ada perubahan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html admin/index.html admin/admin.css
+          git diff --cached --quiet || git commit -m "chore: auto naikkan versi cache CSS/JS [skip ci]"
+          git push

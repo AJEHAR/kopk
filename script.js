@@ -4,7 +4,9 @@
 // fail ni terus.
 // ============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
@@ -13,6 +15,11 @@ const db = getFirestore(app);
 const EXTERNAL_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
 const INFO_ICON = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1"/></svg>`;
 const ARROW_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
+const CHEVRON_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>`;
+
+function escapeHtml(s) {
+  return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 // tambah ?v=<versi> pada URL gambar supaya browser paksa muat semula
 // bila admin update gambar (elak isu cache lama tersangkut)
@@ -27,8 +34,7 @@ function withVersion(path, version) {
 function normalizeUrl(url) {
   if (!url) return url;
   const trimmed = url.trim();
-  if (!trimmed) return trimmed;
-  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith("#") || trimmed.startsWith("/")) return trimmed;
+  if (!trimmed) return trimmed;  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith("#") || trimmed.startsWith("/")) return trimmed;
   return `https://${trimmed}`;
 }
 
@@ -42,12 +48,6 @@ const STATIC_LOGOS = [
   { src: "images/logo-tambahan.png", alt: "Logo Tambahan", aktif: false },
 ];
 
-async function loadContent() {
-  const snap = await getDoc(doc(db, "site", "config"));
-  if (!snap.exists()) throw new Error("Data belum disediakan lagi (dokumen site/config tiada di Firestore).");
-  return snap.data();
-}
-
 function renderLogos(containerIds) {
   const html = STATIC_LOGOS
     .filter(l => l.aktif !== false)
@@ -57,6 +57,54 @@ function renderLogos(containerIds) {
     const el = document.getElementById(id);
     if (el) el.innerHTML = html;
   });
+}
+
+// jana link "Tambah ke Kalendar Google" berdasarkan tarikh acara
+function wireAddToCalendar(acara) {
+  const btn = document.getElementById("btn-add-calendar");
+  if (!btn) return;
+
+  // guna tarikh buka/tutup pendaftaran sebagai anggaran tempoh acara jika
+  // tarikh_acara (teks bebas) tak boleh di-parse; lebih baik guna tarikh
+  // pendaftaran tutup sebagai penanda supaya sentiasa ada tarikh sah
+  const start = acara.tarikh_buka_pendaftaran ? new Date(acara.tarikh_buka_pendaftaran) : null;
+  const end = acara.tarikh_tutup_pendaftaran ? new Date(acara.tarikh_tutup_pendaftaran) : null;
+  if (!start || isNaN(start) || !end || isNaN(end)) {
+    btn.style.display = "none";
+    return;
+  }
+
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const title = encodeURIComponent(acara.nama_penuh || "Kejohanan Olahraga Pendidikan Khas MSS Pahang");
+  const details = encodeURIComponent(`Tempoh pendaftaran: ${acara.tarikh_acara || ""}\nLokasi: ${acara.lokasi || ""}`);
+  const location = encodeURIComponent(acara.lokasi || "");
+
+  btn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}&location=${location}`;
+}
+
+function renderText(teks) {
+  if (!teks) return;
+  const setText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== "") el.textContent = val;
+  };
+  document.title = teks.tab_title || "az=R - KOPK";
+  setText("label-akses-pantas", teks.label_akses_pantas);
+  setText("label-maklumat-terkini", teks.label_maklumat_terkini);
+  setText("label-faq-title", teks.label_faq_title);
+  setText("label-feedback-title", teks.label_feedback_title);
+  setText("label-tambah-kalendar", teks.label_tambah_kalendar);
+  if (teks.label_fb_nama) {
+    document.getElementById("label-fb-nama").innerHTML = `${escapeHtml(teks.label_fb_nama)} <span class="hint">(pilihan)</span>`;
+  }
+  if (teks.label_fb_emel) {
+    document.getElementById("label-fb-emel").innerHTML = `${escapeHtml(teks.label_fb_emel)} <span class="hint">(pilihan)</span>`;
+  }
+  setText("label-fb-mesej", teks.label_fb_mesej);
+  setText("label-fb-submit", teks.label_fb_submit);
+  setText("footer-org", teks.footer_org);
+  setText("footer-copyright-text", teks.footer_copyright);
+  setText("label-admin-link", teks.label_admin_link);
 }
 
 function renderHero(acara) {
@@ -111,6 +159,75 @@ function renderInfoList(items) {
   }).join("");
 }
 
+function renderFaq(faq) {
+  const section = document.getElementById("faq-section");
+  const el = document.getElementById("faq-list");
+  if (!faq || faq.length === 0) {
+    if (section) section.style.display = "none";
+    return;
+  }
+  el.innerHTML = faq.map((item, i) => `
+    <div class="faq-item" data-index="${i}">
+      <button type="button" class="faq-item__question">
+        <span>${item.soalan || ""}</span>
+        ${CHEVRON_ICON}
+      </button>
+      <div class="faq-item__answer"><p>${item.jawapan || ""}</p></div>
+    </div>
+  `).join("");
+
+  el.querySelectorAll(".faq-item__question").forEach(btn => {
+    btn.addEventListener("click", () => {
+      btn.closest(".faq-item").classList.toggle("is-open");
+    });
+  });
+}
+
+function wireFeedbackForm() {
+  const form = document.getElementById("feedback-form");
+  if (!form) return;
+  const statusEl = document.getElementById("feedback-status");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // honeypot: medan tersembunyi - kalau bot isi ni, senyap-senyap abaikan
+    const honeypot = document.getElementById("fb-honeypot").value;
+    if (honeypot) return;
+
+    const mesej = document.getElementById("fb-mesej").value.trim();
+    if (!mesej) {
+      statusEl.textContent = "Sila isi mesej.";
+      statusEl.className = "feedback-status is-err";
+      return;
+    }
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    statusEl.textContent = "Menghantar...";
+    statusEl.className = "feedback-status";
+
+    try {
+      await addDoc(collection(db, "feedback"), {
+        nama: document.getElementById("fb-nama").value.trim(),
+        emel: document.getElementById("fb-emel").value.trim(),
+        mesej,
+        dihantar_pada: serverTimestamp(),
+        dibaca: false,
+      });
+      form.reset();
+      statusEl.textContent = "✓ Terima kasih! Maklum balas anda telah dihantar.";
+      statusEl.className = "feedback-status is-ok";
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "✗ Gagal menghantar. Sila cuba lagi.";
+      statusEl.className = "feedback-status is-err";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
 function startCountdown(acara) {
   const target = new Date(acara.tarikh_tutup_pendaftaran).getTime();
   const opened = new Date(acara.tarikh_buka_pendaftaran).getTime();
@@ -155,7 +272,7 @@ function startCountdown(acara) {
   }
 
   tick();
-  setInterval(tick, 1000);
+  return setInterval(tick, 1000);
 }
 
 function initMotion() {
@@ -196,20 +313,58 @@ function initMotion() {
   });
 }
 
-async function init() {
-  try {
-    const data = await loadContent();
-    renderLogos(["header-logos", "footer-logos"]);
-    renderHero(data.acara);
-    renderCards(data.kotak, data.acara.asset_version);
-    renderInfoList(data.maklumat_berkaitan);
-    startCountdown(data.acara);
+let countdownIntervalId = null;
+let isFirstLoad = true;
+
+function renderAll(data) {
+  renderLogos(["header-logos", "footer-logos"]);
+  renderText(data.teks);
+  renderHero(data.acara);
+  wireAddToCalendar(data.acara);
+  renderCards(data.kotak, data.acara.asset_version);
+  renderInfoList(data.maklumat_berkaitan);
+  renderFaq(data.faq);
+
+  if (countdownIntervalId) clearInterval(countdownIntervalId);
+  countdownIntervalId = startCountdown(data.acara);
+
+  if (isFirstLoad) {
+    wireFeedbackForm();
     initMotion();
-  } catch (err) {
-    console.error(err);
-    document.getElementById("hero-title").textContent =
-      "Ralat: tak dapat baca data. Sila semak Firestore & firebase-config.js.";
+    isFirstLoad = false;
+  } else {
+    // update seterusnya (real-time, tanpa refresh) - papar terus tanpa
+    // tunggu scroll-trigger baru (elemen ni baru sahaja dijana semula)
+    document.querySelectorAll("#cards [data-reveal]").forEach(el => {
+      el.style.opacity = 1;
+      el.style.transform = "none";
+    });
   }
 }
 
+function init() {
+  const ref = doc(db, "site", "config");
+  onSnapshot(ref, (snap) => {
+    if (!snap.exists()) {
+      document.getElementById("hero-title").textContent =
+        "Ralat: data belum disediakan lagi (dokumen site/config tiada di Firestore).";
+      return;
+    }
+    renderAll(snap.data());
+  }, (err) => {
+    console.error(err);
+    document.getElementById("hero-title").textContent =
+      "Ralat: tak dapat baca data. Sila semak Firestore & firebase-config.js.";
+  });
+}
+
 init();
+
+// daftar Service Worker untuk offline-ready (senyap - tak ganggu UX kalau gagal)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((err) => {
+      console.warn("Service Worker gagal daftar (tak kritikal):", err);
+    });
+  });
+}

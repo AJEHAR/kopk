@@ -1,4 +1,4 @@
-@import url("../styles.css?v=5");
+@import url("../styles.css?v=11");
 
 body { background: var(--paper-dim); }
 
@@ -29,6 +29,32 @@ body { background: var(--paper-dim); }
 .gate details summary { cursor: pointer; font-weight: 600; color: var(--navy-950); }
 .gate details ol { margin: 10px 0 0; padding-left: 20px; }
 .gate details li { margin-bottom: 6px; }
+
+/* ---- tabs ---- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.tab-btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.is-active { color: var(--navy-950); border-bottom-color: var(--teal-500); }
+.tab-panel { display: none; }
+.tab-panel.is-active { display: block; }
 
 /* ---- cards / sections ---- */
 .panel {
@@ -102,6 +128,24 @@ body { background: var(--paper-dim); }
 .btn-ghost { background: transparent; color: var(--navy-950); border: 1px solid var(--line); }
 .btn-ghost:hover { background: var(--paper-dim); }
 .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+/* ---- feedback cards ---- */
+.feedback-card {
+  position: relative;
+  padding: 16px 44px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+.feedback-card__meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--ink-soft); margin-bottom: 8px;
+}
+.feedback-card__meta strong { color: var(--ink); font-size: 14px; }
+.feedback-card__date { margin-left: auto; }
+.feedback-card__msg { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--ink); white-space: pre-wrap; }
+.feedback-card .btn-delete-feedback { position: absolute; top: 14px; right: 14px; }
 
 .save-bar {
   position: sticky; bottom: 16px; z-index: 10;

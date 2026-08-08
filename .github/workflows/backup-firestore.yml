@@ -1,0 +1,73 @@
+name: Backup data Firestore
+
+# Jalan automatik setiap hari (12:00 AM UTC ~ 8:00 AM waktu Malaysia)
+# Simpan salinan data Firestore terkini ke folder backups/ dalam repo.
+# Ada history git = boleh tengok/restore versi lama bila-bila.
+#
+# SETUP DIPERLUKAN (buat sekali sahaja):
+# 1. Firebase Console -> Project Settings -> Service Accounts
+#    -> "Generate new private key" -> muat turun fail JSON
+# 2. GitHub repo -> Settings -> Secrets and variables -> Actions
+#    -> New repository secret -> nama: FIREBASE_SERVICE_ACCOUNT
+#    -> value: tampal SEMUA kandungan fail JSON tadi
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # setiap hari, 12:00 AM UTC
+  workflow_dispatch:        # boleh juga trigger manual dari tab "Actions"
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install firebase-admin
+        run: npm install firebase-admin
+
+      - name: Export data Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          mkdir -p backups
+          node << 'EOF'
+          const admin = require("firebase-admin");
+          const fs = require("fs");
+
+          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+          const db = admin.firestore();
+
+          async function run() {
+            const result = {};
+
+            // backup dokumen site/config
+            const configSnap = await db.doc("site/config").get();
+            result.site_config = configSnap.exists ? configSnap.data() : null;
+
+            // backup koleksi feedback
+            const feedbackSnap = await db.collection("feedback").get();
+            result.feedback = feedbackSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            const date = new Date().toISOString().split("T")[0];
+            fs.writeFileSync(`backups/backup-${date}.json`, JSON.stringify(result, null, 2));
+            console.log(`Backup disimpan: backups/backup-${date}.json`);
+          }
+
+          run().catch(err => { console.error(err); process.exit(1); });
+          EOF
+
+      - name: Commit & push backup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          git diff --cached --quiet || git commit -m "chore: backup data Firestore harian [skip ci]"
+          git push

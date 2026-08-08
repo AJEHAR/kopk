@@ -10,12 +10,31 @@
 // 2. Buka script.google.com -> New project -> padam kod default,
 //    tampal SEMUA kod ni -> gantikan SECRET_KEY dan FOLDER_ID di bawah
 //
-// 3. Klik "Deploy" -> "New deployment" -> ikon gear pilih "Web app"
+// 3. *** PENTING - JANGAN SKIP LANGKAH NI ***
+//    Klik ikon gear (Project Settings) -> tick "Show appsscript.json
+//    manifest file in editor". Fail appsscript.json akan muncul di
+//    sidebar kiri -> buka -> tambah "oauthScopes" macam ni:
+//
+//    {
+//      "timeZone": "Asia/Singapore",
+//      "dependencies": {},
+//      "exceptionLogging": "STACKDRIVER",
+//      "runtimeVersion": "V8",
+//      "webapp": { "executeAs": "USER_DEPLOYING", "access": "ANYONE_ANONYMOUS" },
+//      "oauthScopes": ["https://www.googleapis.com/auth/drive"]
+//    }
+//
+//    Tanpa ni, Apps Script auto-detect scope SEMPIT (drive.file) yang
+//    tak boleh akses folder sedia ada anda -> ralat "Access denied:
+//    DriveApp" walaupun authorize dah nampak berjaya dalam editor.
+//
+// 4. Klik "Deploy" -> "New deployment" -> ikon gear pilih "Web app"
 //    - Execute as: Me
 //    - Who has access: Anyone
-//    -> Deploy -> Salin "Web app URL" yang diberikan
+//    -> Deploy -> authorize semula (scope baru = consent baru diminta)
+//    -> Salin "Web app URL" yang diberikan
 //
-// 4. Buka fail apps-script-config.js dalam repo, tampal Web App URL
+// 5. Buka fail apps-script-config.js dalam repo, tampal Web App URL
 //    dan SECRET_KEY yang SAMA macam di bawah
 // ============================================================
 
@@ -38,14 +57,24 @@ function doPost(e) {
     var blob = Utilities.newBlob(bytes, data.mimeType || "application/octet-stream", data.filename);
     var file = folder.createFile(blob);
 
-    // buat fail boleh diakses sesiapa yang ada link (untuk paparan awam laman)
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    // cuba buat fail boleh diakses sesiapa yang ada link - TAPI kalau akaun/dasar
+    // sekat perkongsian link, jangan gagalkan keseluruhan proses. Fail dah pun
+    // wujud dalam Drive; admin boleh set sharing manual jika perlu.
+    var sharingWarning = null;
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (shareErr) {
+      sharingWarning = "Fail berjaya disimpan, tapi sharing 'Anyone with link' gagal diset automatik (" + shareErr.toString() + "). Sila set manual dalam Drive jika perlu.";
+    }
 
-    return jsonOutput({
+    var result = {
       ok: true,
       url: "https://drive.google.com/file/d/" + file.getId() + "/view",
       name: file.getName()
-    });
+    };
+    if (sharingWarning) result.warning = sharingWarning;
+
+    return jsonOutput(result);
 
   } catch (err) {
     return jsonOutput({ ok: false, error: err.toString() });

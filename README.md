@@ -44,9 +44,17 @@ untuk data teks dan login admin. AJK update kandungan melalui `/admin`.
          allow read: if true;
          allow write: if request.auth != null;
        }
+       match /feedback/{doc} {
+         allow create: if request.resource.data.mesej is string
+                       && request.resource.data.mesej.size() > 0
+                       && request.resource.data.mesej.size() < 2000;
+         allow read, update, delete: if request.auth != null;
+       }
      }
    }
    ```
+   (Bahagian `feedback` — sesiapa boleh **hantar** maklum balas [tanpa login], tapi cuma admin
+   yang log masuk boleh **baca/padam**. Ini elak orang lain nampak mesej peribadi pelawat lain.)
 4. **Publish**
 
 ### 4. Dapatkan config & masukkan dalam repo
@@ -70,6 +78,8 @@ untuk data teks dan login admin. AJK update kandungan melalui `/admin`.
    3. Tarikh buka & tutup pendaftaran (untuk countdown)
    4. Link 3 kotak (Pendaftaran / Call Room / Keputusan Tidak Rasmi) + keterangan
    5. Senarai maklumat & pengumuman (+ Tambah Maklumat, boleh susun semula)
+   6. Soalan Lazim (FAQ) — accordion di laman utama
+   7. Semak & padam maklum balas yang dihantar pelawat (tab "Maklum Balas")
 4. Klik **Simpan Semua Perubahan** — laman terus update
 
 **Untuk gambar** (hero + 3 kotak + logo) — admin page cuma **papar pratonton**, tukar sebenar
@@ -121,10 +131,20 @@ Script (percuma, tiada kad kredit).
    - `SECRET_KEY` — apa-apa kata laluan unik anda cipta sendiri (contoh: `"kopk-rahsia-2026"`)
    - `FOLDER_ID` — Folder ID dari langkah 1
 
+3b. **PENTING — jangan skip:** klik ikon gear (Project Settings) → tick
+   **"Show appsscript.json manifest file in editor"**. Fail `appsscript.json`
+   akan muncul di sidebar kiri → buka → tambah baris `oauthScopes`:
+   ```json
+   "oauthScopes": ["https://www.googleapis.com/auth/drive"]
+   ```
+   Tanpa ni, Apps Script auto-detect scope **sempit** (`drive.file`) yang
+   tak boleh akses folder sedia ada anda → ralat **"Access denied: DriveApp"**
+   walaupun proses authorize nampak berjaya dalam editor.
+
 4. **Deploy** → klik **Deploy → New deployment** → ikon gear (⚙️) pilih **Web app**:
    - Execute as: **Me**
    - Who has access: **Anyone**
-   - Klik **Deploy** → salin **Web app URL** yang diberikan (akan minta authorize sekali — tu normal, klik "Advanced → Go to [nama project]")
+   - Klik **Deploy** → authorize semula jika diminta (scope baru = consent baru) → salin **Web app URL** yang diberikan
 
 5. **Masukkan dalam repo** — buka fail `apps-script-config.js`, gantikan:
    - `APPS_SCRIPT_URL` — URL dari langkah 4
@@ -162,6 +182,53 @@ baru dengan nama yang sama ke `images/`.
 buat beberapa hari. Kalau anda update tag/gambar tapi preview lama masih papar:
 - Facebook/WhatsApp: guna [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) → paste URL → "Scrape Again"
 - Telegram: hantar link dengan `?` tambahan di hujung (contoh `kopk.syazr.com/?v=2`) untuk paksa scan baru
+
+## Feature Tambahan (Real-time, Analytics, Offline, Automasi)
+
+### Real-time update
+Laman kini "live" — guna `onSnapshot` bukan `getDoc`. Update di `/admin` akan terus
+muncul untuk semua orang yang tengah buka laman, tanpa refresh. Tiada setup tambahan.
+
+### Google Analytics (GA4)
+1. Pergi ke [analytics.google.com](https://analytics.google.com) → cipta akaun/property baru
+2. Salin **Measurement ID** (format `G-XXXXXXXXXX`)
+3. Buka `index.html`, cari **2 tempat** `G-XXXXXXXXXX` → gantikan dengan ID sebenar anda
+
+### Service Worker (Offline-ready)
+`sw.js` cache reka bentuk laman (bukan data) supaya boleh dibuka walau signal lemah —
+relevan untuk stadium. Auto-daftar bila laman dibuka, tiada setup tambahan.
+**Nota:** kalau anda naikkan `?v=` untuk `styles.css`/`script.js`, kemaskini juga
+senarai `APP_SHELL` dalam `sw.js` dan naikkan `CACHE_VERSION` supaya Service Worker
+tak "stuck" dengan versi lama.
+
+### QR Code
+`images/qr-code.png` — QR code terus ke `kopk.syazr.com`, sedia untuk letak pada
+banner/poster cetakan akan datang.
+
+### Butang "Tambah ke Kalendar"
+Automatik — jana link Google Calendar berdasarkan tarikh buka/tutup pendaftaran yang
+diisi di `/admin`. Tiada setup tambahan.
+
+### `sitemap.xml` + `robots.txt` + Halaman 404
+Fail statik, siap. `robots.txt` block `/admin/` daripada diindeks Google.
+
+### GitHub Action — Auto naikkan versi cache
+`.github/workflows/bump-cache-version.yml` — jalan automatik bila `styles.css`/
+`script.js`/`admin.css`/`admin.js` di-push, naikkan `?v=` di semua tempat sendiri.
+Anda tak perlu ingat naikkan manual lagi. **Tiada setup tambahan** (guna token
+GitHub bawaan repo).
+
+### GitHub Action — Backup Firestore harian
+`.github/workflows/backup-firestore.yml` — setiap hari, eksport data Firestore
+(`site/config` + `feedback`) ke `backups/backup-TARIKH.json` dalam repo.
+
+**Setup diperlukan (sekali sahaja):**
+1. Firebase Console → **Project Settings → Service Accounts** → **Generate new private key** → muat turun fail JSON
+2. Repo GitHub → **Settings → Secrets and variables → Actions** → **New repository secret**
+   - Nama: `FIREBASE_SERVICE_ACCOUNT`
+   - Value: tampal **semua** kandungan fail JSON tadi
+3. Siap — backup pertama akan jalan pada jadual seterusnya, atau boleh trigger manual
+   di tab **Actions** → pilih workflow → **Run workflow**
 
 ## Cache CSS/JS (untuk anda sendiri semasa buat perubahan kod)
 

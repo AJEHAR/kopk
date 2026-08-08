@@ -9,7 +9,7 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc
+  getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { firebaseConfig } from "../firebase-config.js";
 import { APPS_SCRIPT_URL, APPS_SCRIPT_SECRET } from "../apps-script-config.js";
@@ -46,6 +46,22 @@ const DEFAULT_STATE = {
     { label: "Keputusan Tidak Rasmi", keterangan: "", link: "", gambar: "images/kotak-keputusan.jpg" },
   ],
   maklumat_berkaitan: [],
+  faq: [],
+  teks: {
+    tab_title: "az=R - KOPK",
+    label_akses_pantas: "Akses Pantas",
+    label_maklumat_terkini: "Maklumat Terkini",
+    label_faq_title: "Soalan Lazim",
+    label_feedback_title: "Ada Soalan / Maklum Balas?",
+    label_tambah_kalendar: "Tambah ke Kalendar",
+    label_fb_nama: "Nama",
+    label_fb_emel: "Emel",
+    label_fb_mesej: "Mesej",
+    label_fb_submit: "Hantar Mesej",
+    footer_org: "Anjuran Majlis Sukan Sekolah Pahang, Jabatan Pendidikan Negeri Pahang",
+    footer_copyright: "az=r. Hak cipta terpelihara.",
+    label_admin_link: "Log Masuk Admin",
+  },
 };
 
 let state = null;
@@ -116,6 +132,9 @@ async function loadContent() {
   state = snap.exists() ? snap.data() : JSON.parse(JSON.stringify(DEFAULT_STATE));
   if (!state.kotak || state.kotak.length < 3) state.kotak = DEFAULT_STATE.kotak;
   if (!state.maklumat_berkaitan) state.maklumat_berkaitan = [];
+  if (!state.faq) state.faq = [];
+  if (!state.teks) state.teks = JSON.parse(JSON.stringify(DEFAULT_STATE.teks));
+  else state.teks = { ...DEFAULT_STATE.teks, ...state.teks }; // isi medan baru yang belum ada
 }
 
 // ---------------- render form from state ----------------
@@ -140,6 +159,31 @@ function renderForm() {
   });
 
   renderInfoList();
+  renderFaqList();
+  renderTeksFields();
+}
+
+function renderTeksFields() {
+  const t = state.teks;
+  const map = {
+    "t-tab-title": t.tab_title,
+    "t-akses-pantas": t.label_akses_pantas,
+    "t-maklumat-terkini": t.label_maklumat_terkini,
+    "t-faq-title": t.label_faq_title,
+    "t-feedback-title": t.label_feedback_title,
+    "t-tambah-kalendar": t.label_tambah_kalendar,
+    "t-fb-nama": t.label_fb_nama,
+    "t-fb-emel": t.label_fb_emel,
+    "t-fb-mesej": t.label_fb_mesej,
+    "t-fb-submit": t.label_fb_submit,
+    "t-footer-org": t.footer_org,
+    "t-footer-copyright": t.footer_copyright,
+    "t-admin-link": t.label_admin_link,
+  };
+  Object.entries(map).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || "";
+  });
 }
 
 function renderInfoList() {
@@ -185,7 +229,92 @@ function renderInfoList() {
   });
 }
 
-// ---------------- collect form back into state ----------------
+function renderFaqList() {
+  const el = document.getElementById("faq-rows");
+  el.innerHTML = state.faq.map((item, i) => `
+    <div class="info-row" data-index="${i}">
+      <div style="flex:1">
+        <div class="field">
+          <label>Soalan</label>
+          <input type="text" class="faq-soalan" value="${escapeAttr(item.soalan)}">
+        </div>
+        <div class="field">
+          <label>Jawapan</label>
+          <textarea class="faq-jawapan" rows="2">${escapeAttr(item.jawapan)}</textarea>
+        </div>
+      </div>
+      <div class="info-row__actions">
+        <button type="button" class="icon-btn" data-action="up" title="Naik">&uarr;</button>
+        <button type="button" class="icon-btn" data-action="down" title="Turun">&darr;</button>
+        <button type="button" class="icon-btn icon-btn--danger" data-action="delete" title="Padam">&times;</button>
+      </div>
+    </div>
+  `).join("");
+
+  el.querySelectorAll(".info-row").forEach(row => {
+    const idx = Number(row.dataset.index);
+    row.querySelector(".faq-soalan").addEventListener("input", e => state.faq[idx].soalan = e.target.value);
+    row.querySelector(".faq-jawapan").addEventListener("input", e => state.faq[idx].jawapan = e.target.value);
+    row.querySelector('[data-action="delete"]').addEventListener("click", () => {
+      state.faq.splice(idx, 1);
+      renderFaqList();
+    });
+    row.querySelector('[data-action="up"]').addEventListener("click", () => {
+      if (idx === 0) return;
+      [state.faq[idx - 1], state.faq[idx]] = [state.faq[idx], state.faq[idx - 1]];
+      renderFaqList();
+    });
+    row.querySelector('[data-action="down"]').addEventListener("click", () => {
+      if (idx === state.faq.length - 1) return;
+      [state.faq[idx + 1], state.faq[idx]] = [state.faq[idx], state.faq[idx + 1]];
+      renderFaqList();
+    });
+  });
+}
+
+// ---------------- feedback (maklum balas dari pelawat) ----------------
+async function loadFeedback() {
+  const el = document.getElementById("feedback-list");
+  el.innerHTML = `<p style="padding:16px; color:var(--ink-soft); font-size:14px;">Memuatkan...</p>`;
+  try {
+    const q = query(collection(db, "feedback"), orderBy("dihantar_pada", "desc"));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      el.innerHTML = `<p style="padding:16px; color:var(--ink-soft); font-size:14px;">Tiada maklum balas lagi.</p>`;
+      return;
+    }
+    el.innerHTML = snap.docs.map(d => {
+      const item = d.data();
+      const tarikh = item.dihantar_pada?.toDate
+        ? item.dihantar_pada.toDate().toLocaleString("ms-MY")
+        : "-";
+      return `
+        <div class="feedback-card" data-id="${d.id}">
+          <div class="feedback-card__meta">
+            <strong>${escapeAttr(item.nama) || "(Tanpa nama)"}</strong>
+            ${item.emel ? `<span>${escapeAttr(item.emel)}</span>` : ""}
+            <span class="feedback-card__date">${tarikh}</span>
+          </div>
+          <p class="feedback-card__msg">${escapeAttr(item.mesej)}</p>
+          <button type="button" class="icon-btn icon-btn--danger btn-delete-feedback" title="Padam">&times;</button>
+        </div>
+      `;
+    }).join("");
+
+    el.querySelectorAll(".btn-delete-feedback").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const card = btn.closest(".feedback-card");
+        const id = card.dataset.id;
+        if (!confirm("Padam maklum balas ni?")) return;
+        await deleteDoc(doc(db, "feedback", id));
+        card.remove();
+      });
+    });
+  } catch (err) {
+    console.error(err);
+    el.innerHTML = `<p style="padding:16px; color:#c0392b; font-size:14px;">✗ ${err.message}</p>`;
+  }
+}
 function collectForm() {
   state.acara.label_kecil = document.getElementById("f-label-kecil").value.trim();
   state.acara.nama_penuh = document.getElementById("f-nama-penuh").value.trim();
@@ -203,6 +332,20 @@ function collectForm() {
     k.link = normalizeUrl(document.getElementById(`kotak-${i}-link`).value.trim());
     k.gambar = IMAGE_PATHS["kotak" + i].replace("../", ""); // path tetap
   });
+
+  state.teks.tab_title = document.getElementById("t-tab-title").value.trim();
+  state.teks.label_akses_pantas = document.getElementById("t-akses-pantas").value.trim();
+  state.teks.label_maklumat_terkini = document.getElementById("t-maklumat-terkini").value.trim();
+  state.teks.label_faq_title = document.getElementById("t-faq-title").value.trim();
+  state.teks.label_feedback_title = document.getElementById("t-feedback-title").value.trim();
+  state.teks.label_tambah_kalendar = document.getElementById("t-tambah-kalendar").value.trim();
+  state.teks.label_fb_nama = document.getElementById("t-fb-nama").value.trim();
+  state.teks.label_fb_emel = document.getElementById("t-fb-emel").value.trim();
+  state.teks.label_fb_mesej = document.getElementById("t-fb-mesej").value.trim();
+  state.teks.label_fb_submit = document.getElementById("t-fb-submit").value.trim();
+  state.teks.footer_org = document.getElementById("t-footer-org").value.trim();
+  state.teks.footer_copyright = document.getElementById("t-footer-copyright").value.trim();
+  state.teks.label_admin_link = document.getElementById("t-admin-link").value.trim();
 }
 
 // ---------------- save flow ----------------
@@ -284,6 +427,11 @@ document.getElementById("btn-add-info").addEventListener("click", () => {
   renderInfoList();
 });
 
+document.getElementById("btn-add-faq").addEventListener("click", () => {
+  state.faq.push({ soalan: "", jawapan: "" });
+  renderFaqList();
+});
+
 document.getElementById("doc-upload-input").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -300,7 +448,11 @@ document.getElementById("doc-upload-input").addEventListener("change", async (e)
     const result = await uploadDocument(file);
     state.maklumat_berkaitan.unshift({ teks: result.name, link: result.url });
     renderInfoList();
-    statusEl.textContent = "✓ Dokumen dimuat naik. Jangan lupa klik \"Simpan Semua Perubahan\" di bawah untuk sahkan.";
+    if (result.warning) {
+      statusEl.textContent = `⚠ Dimuat naik, tapi: ${result.warning}`;
+    } else {
+      statusEl.textContent = "✓ Dokumen dimuat naik. Jangan lupa klik \"Simpan Semua Perubahan\" di bawah untuk sahkan.";
+    }
   } catch (err) {
     console.error(err);
     statusEl.textContent = `✗ ${err.message}`;
@@ -309,6 +461,20 @@ document.getElementById("doc-upload-input").addEventListener("change", async (e)
 });
 
 document.getElementById("btn-logout").addEventListener("click", () => signOut(auth));
+
+// ---- tab switching ----
+let feedbackLoaded = false;
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("is-active", b === btn));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("is-active", p.dataset.tabPanel === target));
+    if (target === "feedback" && !feedbackLoaded) {
+      feedbackLoaded = true;
+      loadFeedback();
+    }
+  });
+});
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
