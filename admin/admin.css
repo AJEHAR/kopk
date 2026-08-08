@@ -1,4 +1,4 @@
-@import url("../styles.css?v=14");
+@import url("../styles.css?v=13");
 
 body { background: var(--paper-dim); }
 
@@ -130,6 +130,12 @@ body { background: var(--paper-dim); }
 .btn-sm { padding: 8px 14px; font-size: 13px; }
 
 /* ---- feedback cards ---- */
+.feedback-summary {
+  padding: 14px 16px; margin-bottom: 12px;
+  background: var(--paper-dim); border-radius: 10px;
+  font-size: 15px; color: var(--navy-950);
+}
+.feedback-card__stars { color: var(--gold-500); font-size: 14px; letter-spacing: 1px; }
 .feedback-card {
   position: relative;
   padding: 16px 44px 16px 16px;

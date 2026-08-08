@@ -45,7 +45,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
 
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body>
 
@@ -135,6 +135,16 @@
       </div>
     </div>
     <form class="feedback-form" id="feedback-form" data-reveal>
+      <div class="field">
+        <label id="label-fb-rating">Tahap Kepuasan</label>
+        <div class="star-rating" id="star-rating" data-rating="0">
+          <button type="button" class="star" data-value="1" aria-label="1 bintang">★</button>
+          <button type="button" class="star" data-value="2" aria-label="2 bintang">★</button>
+          <button type="button" class="star" data-value="3" aria-label="3 bintang">★</button>
+          <button type="button" class="star" data-value="4" aria-label="4 bintang">★</button>
+          <button type="button" class="star" data-value="5" aria-label="5 bintang">★</button>
+        </div>
+      </div>
       <div class="field-row">
         <div class="field">
           <label id="label-fb-nama">Nama <span class="hint">(pilihan)</span></label>
@@ -179,6 +189,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script type="module" src="script.js?v=14"></script>
+<script type="module" src="script.js?v=13"></script>
 </body>
 </html>

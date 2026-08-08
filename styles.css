@@ -412,6 +412,16 @@ a { color: inherit; }
 }
 .feedback-form input:focus, .feedback-form textarea:focus { background: #fff; border-color: var(--teal-500); outline: none; }
 .feedback-form__honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.star-rating { display: flex; gap: 4px; }
+.star {
+  background: none; border: none; cursor: pointer;
+  font-size: 32px; line-height: 1; padding: 2px;
+  color: var(--line);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.star:hover, .star.is-hover { transform: scale(1.15); }
+.star.is-filled, .star.is-hover { color: var(--gold-500); }
 .btn-feedback-submit {
   font-family: var(--font-body); font-weight: 600; font-size: 14.5px;
   padding: 13px 28px; border-radius: 100px; border: none; cursor: pointer;

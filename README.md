@@ -47,7 +47,8 @@ untuk data teks dan login admin. AJK update kandungan melalui `/admin`.
        match /feedback/{doc} {
          allow create: if request.resource.data.mesej is string
                        && request.resource.data.mesej.size() > 0
-                       && request.resource.data.mesej.size() < 2000;
+                       && request.resource.data.mesej.size() < 2000
+                       && (!("rating" in request.resource.data) || (request.resource.data.rating is int && request.resource.data.rating >= 0 && request.resource.data.rating <= 5));
          allow read, update, delete: if request.auth != null;
        }
      }

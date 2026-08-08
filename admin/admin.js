@@ -56,6 +56,7 @@ const DEFAULT_STATE = {
     label_tambah_kalendar: "Tambah ke Kalendar",
     label_fb_nama: "Nama",
     label_fb_emel: "Emel",
+    label_fb_rating: "Tahap Kepuasan",
     label_fb_mesej: "Mesej",
     label_fb_submit: "Hantar Mesej",
     footer_org: "Anjuran Majlis Sukan Sekolah Pahang, Jabatan Pendidikan Negeri Pahang",
@@ -174,6 +175,7 @@ function renderTeksFields() {
     "t-tambah-kalendar": t.label_tambah_kalendar,
     "t-fb-nama": t.label_fb_nama,
     "t-fb-emel": t.label_fb_emel,
+    "t-fb-rating": t.label_fb_rating,
     "t-fb-mesej": t.label_fb_mesej,
     "t-fb-submit": t.label_fb_submit,
     "t-footer-org": t.footer_org,
@@ -283,7 +285,19 @@ async function loadFeedback() {
       el.innerHTML = `<p style="padding:16px; color:var(--ink-soft); font-size:14px;">Tiada maklum balas lagi.</p>`;
       return;
     }
-    el.innerHTML = snap.docs.map(d => {
+
+    // kira purata rating
+    const ratings = snap.docs.map(d => d.data().rating).filter(r => typeof r === "number" && r > 0);
+    const avg = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : null;
+    const summary = avg
+      ? `<div class="feedback-summary">⭐ <strong>${avg}</strong> / 5 &nbsp;<span class="hint">(purata daripada ${ratings.length} penilaian, ${snap.docs.length} maklum balas keseluruhan)</span></div>`
+      : `<div class="feedback-summary"><span class="hint">${snap.docs.length} maklum balas, belum ada penilaian bintang</span></div>`;
+
+    const starsHtml = (n) => n > 0
+      ? `<span class="feedback-card__stars">${"★".repeat(n)}${"☆".repeat(5 - n)}</span>`
+      : "";
+
+    el.innerHTML = summary + snap.docs.map(d => {
       const item = d.data();
       const tarikh = item.dihantar_pada?.toDate
         ? item.dihantar_pada.toDate().toLocaleString("ms-MY")
@@ -293,6 +307,7 @@ async function loadFeedback() {
           <div class="feedback-card__meta">
             <strong>${escapeAttr(item.nama) || "(Tanpa nama)"}</strong>
             ${item.emel ? `<span>${escapeAttr(item.emel)}</span>` : ""}
+            ${starsHtml(item.rating || 0)}
             <span class="feedback-card__date">${tarikh}</span>
           </div>
           <p class="feedback-card__msg">${escapeAttr(item.mesej)}</p>
@@ -341,6 +356,7 @@ function collectForm() {
   state.teks.label_tambah_kalendar = document.getElementById("t-tambah-kalendar").value.trim();
   state.teks.label_fb_nama = document.getElementById("t-fb-nama").value.trim();
   state.teks.label_fb_emel = document.getElementById("t-fb-emel").value.trim();
+  state.teks.label_fb_rating = document.getElementById("t-fb-rating").value.trim();
   state.teks.label_fb_mesej = document.getElementById("t-fb-mesej").value.trim();
   state.teks.label_fb_submit = document.getElementById("t-fb-submit").value.trim();
   state.teks.footer_org = document.getElementById("t-footer-org").value.trim();
