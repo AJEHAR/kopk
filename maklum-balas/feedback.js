@@ -13,8 +13,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const RATING_LABELS = {
-  rating5: { min: "Sangat Tidak Setuju", max: "Sangat Setuju", count: 5 },
-  rating10: { min: "Sangat Tidak Setuju", max: "Sangat Setuju", count: 10 },
+  rating5: { min: "Tidak Puas", max: "Sangat Puas", start: 0, end: 5 },
+  rating10: { min: "Sangat Tidak Setuju", max: "Sangat Setuju", start: 1, end: 10 },
 };
 
 function escapeHtml(s) {
@@ -41,11 +41,12 @@ function renderQuestion(q, index) {
 
   if (q.type === "rating5" || q.type === "rating10") {
     const cfg = RATING_LABELS[q.type];
-    const opts = Array.from({ length: cfg.count }, (_, i) => i + 1)
-      .map(n => `<button type="button" class="fq-rating__opt" data-value="${n}">${n}</button>`)
+    const defaultValue = q.type === "rating5" ? cfg.end : null; // skor kepuasan: default Sangat Puas
+    const opts = Array.from({ length: cfg.end - cfg.start + 1 }, (_, i) => i + cfg.start)
+      .map(n => `<button type="button" class="fq-rating__opt${n === defaultValue ? " is-selected" : ""}" data-value="${n}">${n}</button>`)
       .join("");
     bodyHtml = `
-      <div class="fq-rating" data-answer-container>
+      <div class="fq-rating" data-answer-container${defaultValue !== null ? ` data-selected="${defaultValue}"` : ""}>
         <span class="fq-rating__label">${cfg.min}</span>
         <div class="fq-rating__scale">${opts}</div>
         <span class="fq-rating__label">${cfg.max}</span>

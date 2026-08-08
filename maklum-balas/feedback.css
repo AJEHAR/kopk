@@ -51,8 +51,8 @@
   font-family: var(--font-mono); font-weight: 700; font-size: 15px; color: var(--ink);
   cursor: pointer; transition: all 0.2s ease;
 }
-.fq-rating__opt:hover { border-color: var(--teal-500); }
-.fq-rating__opt.is-selected { background: var(--navy-950); border-color: var(--navy-950); color: #fff; transform: scale(1.08); }
+.fq-rating__opt:hover { border-color: #16A34A; }
+.fq-rating__opt.is-selected { background: #16A34A; border-color: #16A34A; color: #fff; transform: scale(1.08); }
 
 /* ---- pilihan (single/multi) ---- */
 .fq-choices { display: flex; flex-direction: column; gap: 10px; }

@@ -275,8 +275,8 @@ function renderFaqList() {
 // Koleksi Firestore: feedback_questions, feedback_submissions
 // ============================================================
 const QUESTION_TYPES = {
-  rating5: "Rating 1-5",
-  rating10: "Rating 1-10",
+  rating5: "Skor Kepuasan (0-5)",
+  rating10: "Skala 1-10",
   single_choice: "Pilihan Tunggal",
   multi_choice: "Pilihan Berbilang",
   short_text: "Jawapan Pendek",
@@ -475,12 +475,18 @@ async function loadFeedbackAnalytics() {
       html += `<div class="analytics-block"><h3>${escapeAttr(q.question)}</h3>`;
 
       if (RATING_TYPES.includes(q.type)) {
-        const max = q.type === "rating5" ? 5 : 10;
-        const counts = Array.from({ length: max }, (_, i) => answersForQ.filter(a => a === i + 1).length);
+        const start = q.type === "rating5" ? 0 : 1;
+        const end = q.type === "rating5" ? 5 : 10;
+        const labels = [];
+        const counts = [];
+        for (let n = start; n <= end; n++) {
+          labels.push(String(n));
+          counts.push(answersForQ.filter(a => a === n).length);
+        }
         const avg = (answersForQ.reduce((a, b) => a + b, 0) / answersForQ.length).toFixed(1);
-        html += `<p class="analytics-block__avg">Purata: <strong>${avg}</strong> / ${max} (${answersForQ.length} jawapan)</p>`;
+        html += `<p class="analytics-block__avg">Purata: <strong>${avg}</strong> / ${end} (${answersForQ.length} jawapan)</p>`;
         html += `<canvas id="chart-${q.id}" height="90"></canvas>`;
-        setTimeout(() => renderBarChart(`chart-${q.id}`, counts.map((_, i) => String(i + 1)), counts), 0);
+        setTimeout(() => renderBarChart(`chart-${q.id}`, labels, counts), 0);
       } else if (CHOICE_TYPES.includes(q.type)) {
         const optionCounts = {};
         (q.options || []).forEach(opt => optionCounts[opt] = 0);
