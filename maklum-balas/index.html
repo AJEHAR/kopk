@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Maklum Balas — KOPK</title>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
+<link rel="stylesheet" href="../styles.css?v=14">
+<link rel="stylesheet" href="feedback.css?v=1">
+</head>
+<body class="fq-body">
+
+<header class="site-header" style="position: relative;">
+  <div class="site-header__inner">
+    <div class="logo-row" id="header-logos"></div>
+  </div>
+</header>
+
+<main class="fq-main">
+  <div class="wrap fq-wrap">
+    <a href="../index.html" class="fq-back">&larr; Kembali ke laman utama</a>
+    <h1 class="fq-title">Maklum Balas</h1>
+    <p class="fq-intro">Kongsikan pandangan anda tentang Kejohanan Olahraga Pendidikan Khas MSS Pahang — bantu kami tingkatkan penganjuran akan datang.</p>
+
+    <div id="fq-loading" class="fq-loading">Memuatkan soalan...</div>
+    <div id="fq-empty" class="fq-empty" style="display:none;">Tiada soalan tinjauan buat masa ini. Sila cuba lagi kemudian.</div>
+
+    <form id="fq-form" class="fq-form" style="display:none;">
+      <div id="fq-questions"></div>
+
+      <!-- honeypot -->
+      <div class="fq-honeypot" aria-hidden="true">
+        <label for="fq-honeypot">Jangan isi medan ini</label>
+        <input type="text" id="fq-honeypot" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button type="submit" class="fq-submit" id="fq-submit-btn">Hantar Maklum Balas</button>
+      <p id="fq-status" class="fq-status"></p>
+    </form>
+
+    <div id="fq-thankyou" class="fq-thankyou" style="display:none;">
+      <div class="fq-thankyou__icon">✓</div>
+      <h2>Terima Kasih!</h2>
+      <p>Maklum balas anda telah dihantar dan sangat kami hargai.</p>
+      <a href="../index.html" class="fq-submit" style="display:inline-flex; text-decoration:none;">Kembali ke Laman Utama</a>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__top">
+      <div class="logo-row" id="footer-logos"></div>
+      <div class="site-footer__info">
+        <p class="site-footer__name" id="footer-name">Kejohanan Olahraga Pendidikan Khas MSS Pahang</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="feedback.js?v=1"></script>
+</body>
+</html>

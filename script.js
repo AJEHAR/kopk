@@ -5,7 +5,7 @@
 // ============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
-  getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp
+  getFirestore, doc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -94,15 +94,8 @@ function renderText(teks) {
   setText("label-faq-title", teks.label_faq_title);
   setText("label-feedback-title", teks.label_feedback_title);
   setText("label-tambah-kalendar", teks.label_tambah_kalendar);
-  if (teks.label_fb_nama) {
-    document.getElementById("label-fb-nama").innerHTML = `${escapeHtml(teks.label_fb_nama)} <span class="hint">(pilihan)</span>`;
-  }
-  if (teks.label_fb_emel) {
-    document.getElementById("label-fb-emel").innerHTML = `${escapeHtml(teks.label_fb_emel)} <span class="hint">(pilihan)</span>`;
-  }
-  setText("label-fb-mesej", teks.label_fb_mesej);
-  setText("label-fb-rating", teks.label_fb_rating);
-  setText("label-fb-submit", teks.label_fb_submit);
+  setText("label-feedback-cta-title", teks.label_feedback_cta_title);
+  setText("label-feedback-cta-desc", teks.label_feedback_cta_desc);
   setText("footer-org", teks.footer_org);
   setText("footer-copyright-text", teks.footer_copyright);
   setText("label-admin-link", teks.label_admin_link);
@@ -184,73 +177,6 @@ function renderFaq(faq) {
   });
 }
 
-function wireFeedbackForm() {
-  const form = document.getElementById("feedback-form");
-  if (!form) return;
-  const statusEl = document.getElementById("feedback-status");
-
-  // ---- star rating (klik untuk pilih, hover untuk pratonton) ----
-  const starContainer = document.getElementById("star-rating");
-  const stars = Array.from(starContainer.querySelectorAll(".star"));
-
-  function paintStars(upTo, className) {
-    stars.forEach(s => s.classList.toggle(className, Number(s.dataset.value) <= upTo));
-  }
-
-  stars.forEach(star => {
-    star.addEventListener("click", () => {
-      starContainer.dataset.rating = star.dataset.value;
-      paintStars(Number(star.dataset.value), "is-filled");
-    });
-    star.addEventListener("mouseenter", () => paintStars(Number(star.dataset.value), "is-hover"));
-    star.addEventListener("mouseleave", () => paintStars(0, "is-hover"));
-  });
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    // honeypot: medan tersembunyi - kalau bot isi ni, senyap-senyap abaikan
-    const honeypot = document.getElementById("fb-honeypot").value;
-    if (honeypot) return;
-
-    const mesej = document.getElementById("fb-mesej").value.trim();
-    const rating = Number(starContainer.dataset.rating) || 0;
-
-    if (!mesej) {
-      statusEl.textContent = "Sila isi mesej.";
-      statusEl.className = "feedback-status is-err";
-      return;
-    }
-
-    const btn = form.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    statusEl.textContent = "Menghantar...";
-    statusEl.className = "feedback-status";
-
-    try {
-      await addDoc(collection(db, "feedback"), {
-        nama: document.getElementById("fb-nama").value.trim(),
-        emel: document.getElementById("fb-emel").value.trim(),
-        mesej,
-        rating,
-        dihantar_pada: serverTimestamp(),
-        dibaca: false,
-      });
-      form.reset();
-      starContainer.dataset.rating = "0";
-      paintStars(0, "is-filled");
-      statusEl.textContent = "✓ Terima kasih! Maklum balas anda telah dihantar.";
-      statusEl.className = "feedback-status is-ok";
-    } catch (err) {
-      console.error(err);
-      statusEl.textContent = "✗ Gagal menghantar. Sila cuba lagi.";
-      statusEl.className = "feedback-status is-err";
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
-
 function startCountdown(acara) {
   const target = new Date(acara.tarikh_tutup_pendaftaran).getTime();
   const opened = new Date(acara.tarikh_buka_pendaftaran).getTime();
@@ -323,7 +249,7 @@ function initMotion() {
     scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
   });
 
-  gsap.utils.toArray(".section__head, .info-panel, .feedback-form, #faq-list").forEach(el => {
+  gsap.utils.toArray(".section__head, .info-panel, .feedback-cta, #faq-list").forEach(el => {
     gsap.to(el, {
       opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
       scrollTrigger: { trigger: el, start: "top 85%" }
@@ -352,7 +278,6 @@ function renderAll(data) {
   countdownIntervalId = startCountdown(data.acara);
 
   if (isFirstLoad) {
-    wireFeedbackForm();
     initMotion();
     isFirstLoad = false;
   } else {

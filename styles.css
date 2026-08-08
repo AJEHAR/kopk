@@ -392,47 +392,31 @@ a { color: inherit; }
 .faq-item__answer p { margin: 0; font-size: 14.5px; line-height: 1.65; color: rgba(255,255,255,0.72); }
 
 /* ============================================
-   FEEDBACK FORM
+   FEEDBACK CTA CARD (link ke /maklum-balas/)
    ============================================ */
-.feedback-form { max-width: 640px; }
-.feedback-form .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.feedback-form .field { margin-bottom: 16px; }
-.feedback-form .field label {
-  display: block; font-size: 13px; font-weight: 600; color: var(--ink);
-  margin-bottom: 6px;
-}
-.feedback-form .field .hint { font-weight: 400; color: var(--ink-soft); }
-.feedback-form input[type="text"],
-.feedback-form input[type="email"],
-.feedback-form textarea {
-  width: 100%; padding: 12px 14px; border-radius: 12px;
-  border: 1px solid var(--line); background: var(--paper-dim);
-  font-family: var(--font-body); font-size: 14.5px; color: var(--ink);
-  resize: vertical;
-}
-.feedback-form input:focus, .feedback-form textarea:focus { background: #fff; border-color: var(--teal-500); outline: none; }
-.feedback-form__honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-
-.star-rating { display: flex; gap: 4px; }
-.star {
-  background: none; border: none; cursor: pointer;
-  font-size: 32px; line-height: 1; padding: 2px;
-  color: var(--line);
-  transition: color 0.15s ease, transform 0.15s ease;
-}
-.star:hover, .star.is-hover { transform: scale(1.15); }
-.star.is-filled, .star.is-hover { color: var(--gold-500); }
-.btn-feedback-submit {
-  font-family: var(--font-body); font-weight: 600; font-size: 14.5px;
-  padding: 13px 28px; border-radius: 100px; border: none; cursor: pointer;
+.feedback-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  max-width: 640px;
+  padding: 24px 28px;
+  border-radius: var(--radius);
   background: var(--navy-950); color: #fff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(.16,1,.3,1), box-shadow 0.3s ease;
 }
-.btn-feedback-submit:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(11,31,58,0.35); }
-.btn-feedback-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-.feedback-status { margin: 14px 0 0; font-size: 13.5px; color: var(--ink-soft); }
-.feedback-status.is-ok { color: var(--teal-500); font-weight: 600; }
-.feedback-status.is-err { color: #c0392b; font-weight: 600; }
+.feedback-cta:hover, .feedback-cta:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 48px -20px rgba(11,31,58,0.4);
+}
+.feedback-cta__text { display: flex; flex-direction: column; gap: 6px; }
+.feedback-cta__text strong { font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.feedback-cta__text span:not(strong) { font-size: 13.5px; color: rgba(255,255,255,0.65); }
+.feedback-cta__arrow {
+  flex: none; width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s ease;
+}
+.feedback-cta:hover .feedback-cta__arrow { transform: translate(3px, -3px); background: var(--gold-500); color: var(--navy-950); }
 
 .site-footer {
   background: var(--navy-950);
@@ -489,7 +473,8 @@ a { color: inherit; }
 @media (max-width: 640px) {
   .site-header__inner { padding: 12px 18px; }
   .countdown__cell { min-width: 66px; padding: 12px 8px 10px; }
-  .feedback-form .field-row { grid-template-columns: 1fr; gap: 0; }
+  .feedback-cta { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .feedback-cta__arrow { align-self: flex-end; }
 
   /* 3 kotak jadi padat sebaris - elak scroll panjang di phone */
   .cards {

@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
-<link rel="stylesheet" href="admin.css?v=14">
+<link rel="stylesheet" href="admin.css?v=15">
 </head>
 <body>
 
@@ -184,10 +184,77 @@
 
     <div class="tab-panel" data-tab-panel="feedback">
     <div class="panel">
-      <h2>7. Maklum Balas Pelawat</h2>
-      <p class="panel-desc">Mesej yang dihantar pelawat melalui borang di laman utama. Senarai ni tak disimpan bila anda klik "Simpan Semua Perubahan" (ia terus tersimpan bila pelawat hantar) - cuma untuk anda BACA &amp; padam.</p>
-      <div id="feedback-list"></div>
+      <h2>7. Maklum Balas — Soalan Dinamik &amp; Analisis</h2>
+      <p class="panel-desc">Bina soalan tinjauan sendiri (tiada hardcode) — pelawat jawab di page <code>/maklum-balas/</code>. Susunan &amp; status di sini terus terpakai di laman awam.</p>
+
+      <div class="fb-subtabs">
+        <button type="button" class="fb-subtab-btn is-active" data-fbsubtab="soalan">Soalan</button>
+        <button type="button" class="fb-subtab-btn" data-fbsubtab="analisis">Analisis</button>
+      </div>
+
+      <div class="fb-subpanel is-active" data-fbsubpanel="soalan">
+        <button type="button" id="btn-add-question" class="btn btn-primary btn-sm" style="margin-bottom:16px;">+ Tambah Soalan</button>
+        <div style="overflow-x:auto;">
+          <table class="q-table">
+            <thead>
+              <tr><th>Bil</th><th>Soalan</th><th>Jenis</th><th>Wajib</th><th>Status</th><th>Tindakan</th></tr>
+            </thead>
+            <tbody id="questions-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="fb-subpanel" data-fbsubpanel="analisis">
+        <div id="analytics-container"></div>
+      </div>
     </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Soalan -->
+    <div class="modal-backdrop" id="question-modal">
+      <div class="modal-box">
+        <div class="modal-box__header">
+          <h3 id="qm-title">Tambah Soalan</h3>
+          <button type="button" id="qm-close" class="icon-btn">&times;</button>
+        </div>
+        <input type="hidden" id="qm-id">
+        <div class="field">
+          <label>Soalan</label>
+          <input type="text" id="qm-question" placeholder="Contoh: Inovasi ini mudah digunakan">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Jenis Soalan</label>
+            <select id="qm-type">
+              <option value="rating5">Rating 1-5</option>
+              <option value="rating10">Rating 1-10</option>
+              <option value="single_choice">Pilihan Tunggal</option>
+              <option value="multi_choice">Pilihan Berbilang</option>
+              <option value="short_text">Jawapan Pendek</option>
+              <option value="long_text">Jawapan Panjang</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="qm-status">
+              <option value="active">Aktif</option>
+              <option value="inactive">Tidak Aktif</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" id="qm-options-field" style="display:none;">
+          <label>Pilihan Jawapan <span class="hint">(1 baris = 1 pilihan)</span></label>
+          <textarea id="qm-options" rows="4" placeholder="Setiap hari&#10;Beberapa kali seminggu&#10;Sekali-sekala&#10;Jarang"></textarea>
+        </div>
+        <div class="field" style="display:flex; align-items:center; gap:10px;">
+          <input type="checkbox" id="qm-required" style="width:auto;">
+          <label style="margin:0;" for="qm-required">Soalan wajib dijawab</label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+          <button type="button" id="qm-cancel" class="btn btn-ghost btn-sm">Batal</button>
+          <button type="button" id="qm-save" class="btn btn-primary btn-sm">Simpan Soalan</button>
+        </div>
+      </div>
     </div>
 
     <div class="tab-panel" data-tab-panel="wording">
@@ -212,18 +279,14 @@
         <input type="text" id="t-tambah-kalendar">
       </div>
 
-      <p style="font-weight:600; font-size:13px; margin:20px 0 10px; color:var(--navy-950);">Label Borang Maklum Balas</p>
-      <div class="field-row">
-        <div class="field"><label>Label "Nama"</label><input type="text" id="t-fb-nama"></div>
-        <div class="field"><label>Label "Emel"</label><input type="text" id="t-fb-emel"></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Label "Tahap Kepuasan"</label><input type="text" id="t-fb-rating"></div>
-        <div class="field"><label>Label "Mesej"</label><input type="text" id="t-fb-mesej"></div>
+      <p style="font-weight:600; font-size:13px; margin:20px 0 10px; color:var(--navy-950);">Kad Maklum Balas (link ke page /maklum-balas/)</p>
+      <div class="field">
+        <label>Tajuk Kad</label>
+        <input type="text" id="t-feedback-cta-title">
       </div>
       <div class="field">
-        <label>Teks Butang Hantar</label>
-        <input type="text" id="t-fb-submit">
+        <label>Keterangan Kad</label>
+        <input type="text" id="t-feedback-cta-desc">
       </div>
 
       <p style="font-weight:600; font-size:13px; margin:20px 0 10px; color:var(--navy-950);">Footer</p>
@@ -248,6 +311,7 @@
   </div>
 </div>
 
-<script type="module" src="admin.js?v=14"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script type="module" src="admin.js?v=15"></script>
 </body>
 </html>

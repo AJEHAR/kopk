@@ -45,7 +45,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap">
 
-<link rel="stylesheet" href="styles.css?v=13">
+<link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
 
@@ -134,39 +134,15 @@
         <h2 class="section__title" id="label-feedback-title">Ada Soalan / Maklum Balas?</h2>
       </div>
     </div>
-    <form class="feedback-form" id="feedback-form" data-reveal>
-      <div class="field">
-        <label id="label-fb-rating">Tahap Kepuasan</label>
-        <div class="star-rating" id="star-rating" data-rating="0">
-          <button type="button" class="star" data-value="1" aria-label="1 bintang">★</button>
-          <button type="button" class="star" data-value="2" aria-label="2 bintang">★</button>
-          <button type="button" class="star" data-value="3" aria-label="3 bintang">★</button>
-          <button type="button" class="star" data-value="4" aria-label="4 bintang">★</button>
-          <button type="button" class="star" data-value="5" aria-label="5 bintang">★</button>
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label id="label-fb-nama">Nama <span class="hint">(pilihan)</span></label>
-          <input type="text" id="fb-nama" autocomplete="name">
-        </div>
-        <div class="field">
-          <label id="label-fb-emel">Emel <span class="hint">(pilihan)</span></label>
-          <input type="email" id="fb-emel" autocomplete="email">
-        </div>
-      </div>
-      <div class="field">
-        <label id="label-fb-mesej">Mesej</label>
-        <textarea id="fb-mesej" rows="4" required></textarea>
-      </div>
-      <!-- honeypot: tersembunyi dari manusia, perangkap bot -->
-      <div class="feedback-form__honeypot" aria-hidden="true">
-        <label for="fb-honeypot">Jangan isi medan ini</label>
-        <input type="text" id="fb-honeypot" name="website" tabindex="-1" autocomplete="off">
-      </div>
-      <button type="submit" class="btn-feedback-submit" id="label-fb-submit">Hantar Mesej</button>
-      <p id="feedback-status" class="feedback-status"></p>
-    </form>
+    <a href="maklum-balas/index.html" class="feedback-cta" data-reveal>
+      <span class="feedback-cta__text">
+        <strong id="label-feedback-cta-title">Kongsikan pandangan anda</strong>
+        <span id="label-feedback-cta-desc">Bantu kami tingkatkan kejohanan akan datang — ambil masa kurang dari 2 minit</span>
+      </span>
+      <span class="feedback-cta__arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      </span>
+    </a>
   </div>
 </section>
 
@@ -189,6 +165,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script type="module" src="script.js?v=13"></script>
+<script type="module" src="script.js?v=14"></script>
 </body>
 </html>

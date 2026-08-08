@@ -9,7 +9,8 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy, deleteDoc
+  getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy,
+  deleteDoc, addDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { firebaseConfig } from "../firebase-config.js";
 import { APPS_SCRIPT_URL, APPS_SCRIPT_SECRET } from "../apps-script-config.js";
@@ -54,11 +55,8 @@ const DEFAULT_STATE = {
     label_faq_title: "Soalan Lazim",
     label_feedback_title: "Ada Soalan / Maklum Balas?",
     label_tambah_kalendar: "Tambah ke Kalendar",
-    label_fb_nama: "Nama",
-    label_fb_emel: "Emel",
-    label_fb_rating: "Tahap Kepuasan",
-    label_fb_mesej: "Mesej",
-    label_fb_submit: "Hantar Mesej",
+    label_feedback_cta_title: "Kongsikan pandangan anda",
+    label_feedback_cta_desc: "Bantu kami tingkatkan kejohanan akan datang — ambil masa kurang dari 2 minit",
     footer_org: "Anjuran Majlis Sukan Sekolah Pahang, Jabatan Pendidikan Negeri Pahang",
     footer_copyright: "az=r. Hak cipta terpelihara.",
     label_admin_link: "Log Masuk Admin",
@@ -173,11 +171,8 @@ function renderTeksFields() {
     "t-faq-title": t.label_faq_title,
     "t-feedback-title": t.label_feedback_title,
     "t-tambah-kalendar": t.label_tambah_kalendar,
-    "t-fb-nama": t.label_fb_nama,
-    "t-fb-emel": t.label_fb_emel,
-    "t-fb-rating": t.label_fb_rating,
-    "t-fb-mesej": t.label_fb_mesej,
-    "t-fb-submit": t.label_fb_submit,
+    "t-feedback-cta-title": t.label_feedback_cta_title,
+    "t-feedback-cta-desc": t.label_feedback_cta_desc,
     "t-footer-org": t.footer_org,
     "t-footer-copyright": t.footer_copyright,
     "t-admin-link": t.label_admin_link,
@@ -275,61 +270,257 @@ function renderFaqList() {
 }
 
 // ---------------- feedback (maklum balas dari pelawat) ----------------
-async function loadFeedback() {
-  const el = document.getElementById("feedback-list");
-  el.innerHTML = `<p style="padding:16px; color:var(--ink-soft); font-size:14px;">Memuatkan...</p>`;
+// ============================================================
+// MAKLUM BALAS - soalan dinamik (bukan hardcode) + analisis
+// Koleksi Firestore: feedback_questions, feedback_submissions
+// ============================================================
+const QUESTION_TYPES = {
+  rating5: "Rating 1-5",
+  rating10: "Rating 1-10",
+  single_choice: "Pilihan Tunggal",
+  multi_choice: "Pilihan Berbilang",
+  short_text: "Jawapan Pendek",
+  long_text: "Jawapan Panjang",
+};
+const CHOICE_TYPES = ["single_choice", "multi_choice"];
+const RATING_TYPES = ["rating5", "rating10"];
+
+let allQuestions = [];
+
+// ---- sub-tab dalam "Maklum Balas": Soalan / Analisis ----
+document.querySelectorAll(".fb-subtab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".fb-subtab-btn").forEach(b => b.classList.toggle("is-active", b === btn));
+    const target = btn.dataset.fbsubtab;
+    document.querySelectorAll(".fb-subpanel").forEach(p => p.classList.toggle("is-active", p.dataset.fbsubpanel === target));
+    if (target === "analisis") loadFeedbackAnalytics();
+  });
+});
+
+// ---- SOALAN: senarai + table ----
+async function loadFeedbackQuestions() {
+  const el = document.getElementById("questions-table-body");
+  el.innerHTML = `<tr><td colspan="6" style="padding:16px; color:var(--ink-soft);">Memuatkan...</td></tr>`;
   try {
-    const q = query(collection(db, "feedback"), orderBy("dihantar_pada", "desc"));
+    const q = query(collection(db, "feedback_questions"), orderBy("order", "asc"));
     const snap = await getDocs(q);
-    if (snap.empty) {
-      el.innerHTML = `<p style="padding:16px; color:var(--ink-soft); font-size:14px;">Tiada maklum balas lagi.</p>`;
+    allQuestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderQuestionsTable();
+  } catch (err) {
+    console.error(err);
+    el.innerHTML = `<tr><td colspan="6" style="padding:16px; color:#c0392b;">✗ ${err.message}</td></tr>`;
+  }
+}
+
+function renderQuestionsTable() {
+  const el = document.getElementById("questions-table-body");
+  if (allQuestions.length === 0) {
+    el.innerHTML = `<tr><td colspan="6" style="padding:16px; color:var(--ink-soft);">Belum ada soalan. Klik "+ Tambah Soalan" untuk mula.</td></tr>`;
+    return;
+  }
+  el.innerHTML = allQuestions.map((q, i) => `
+    <tr data-id="${q.id}">
+      <td>${i + 1}</td>
+      <td>${escapeAttr(q.question)}</td>
+      <td>${QUESTION_TYPES[q.type] || q.type}</td>
+      <td>${q.required ? "Ya" : "Tidak"}</td>
+      <td>
+        <button type="button" class="status-pill status-pill--${q.status}" data-action="toggle-status" title="Klik untuk tukar">
+          ${q.status === "active" ? "Aktif" : "Tidak Aktif"}
+        </button>
+      </td>
+      <td class="q-actions">
+        <button type="button" class="icon-btn" data-action="up" title="Naik">&uarr;</button>
+        <button type="button" class="icon-btn" data-action="down" title="Turun">&darr;</button>
+        <button type="button" class="icon-btn" data-action="edit" title="Edit">&#9998;</button>
+        <button type="button" class="icon-btn icon-btn--danger" data-action="delete" title="Padam">&times;</button>
+      </td>
+    </tr>
+  `).join("");
+
+  el.querySelectorAll("tr[data-id]").forEach(row => {
+    const id = row.dataset.id;
+    const q = allQuestions.find(x => x.id === id);
+    row.querySelector('[data-action="edit"]').addEventListener("click", () => openQuestionModal(q));
+    row.querySelector('[data-action="delete"]').addEventListener("click", () => deleteQuestion(q));
+    row.querySelector('[data-action="toggle-status"]').addEventListener("click", () => toggleQuestionStatus(q));
+    row.querySelector('[data-action="up"]').addEventListener("click", () => moveQuestion(q, -1));
+    row.querySelector('[data-action="down"]').addEventListener("click", () => moveQuestion(q, 1));
+  });
+}
+
+async function deleteQuestion(q) {
+  if (!confirm(`Padam soalan "${q.question}"? Data submission lama TIDAK terjejas (snapshot soalan dah disimpan berasingan).`)) return;
+  await deleteDoc(doc(db, "feedback_questions", q.id));
+  await loadFeedbackQuestions();
+}
+
+async function toggleQuestionStatus(q) {
+  const newStatus = q.status === "active" ? "inactive" : "active";
+  await updateDoc(doc(db, "feedback_questions", q.id), { status: newStatus, updatedAt: serverTimestamp() });
+  await loadFeedbackQuestions();
+}
+
+async function moveQuestion(q, dir) {
+  const idx = allQuestions.findIndex(x => x.id === q.id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= allQuestions.length) return;
+  const other = allQuestions[swapIdx];
+  const qOrder = q.order, otherOrder = other.order;
+  await updateDoc(doc(db, "feedback_questions", q.id), { order: otherOrder, updatedAt: serverTimestamp() });
+  await updateDoc(doc(db, "feedback_questions", other.id), { order: qOrder, updatedAt: serverTimestamp() });
+  await loadFeedbackQuestions();
+}
+
+// ---- Modal tambah/edit soalan ----
+function openQuestionModal(existing) {
+  const modal = document.getElementById("question-modal");
+  document.getElementById("qm-title").textContent = existing ? "Edit Soalan" : "Tambah Soalan";
+  document.getElementById("qm-id").value = existing?.id || "";
+  document.getElementById("qm-question").value = existing?.question || "";
+  document.getElementById("qm-type").value = existing?.type || "short_text";
+  document.getElementById("qm-required").checked = existing?.required ?? false;
+  document.getElementById("qm-status").value = existing?.status || "active";
+  document.getElementById("qm-options").value = (existing?.options || []).join("\n");
+  toggleOptionsField();
+  modal.classList.add("is-open");
+}
+function closeQuestionModal() {
+  document.getElementById("question-modal").classList.remove("is-open");
+}
+function toggleOptionsField() {
+  const type = document.getElementById("qm-type").value;
+  document.getElementById("qm-options-field").style.display = CHOICE_TYPES.includes(type) ? "block" : "none";
+}
+
+async function saveQuestionFromModal() {
+  const id = document.getElementById("qm-id").value;
+  const question = document.getElementById("qm-question").value.trim();
+  const type = document.getElementById("qm-type").value;
+  const required = document.getElementById("qm-required").checked;
+  const status = document.getElementById("qm-status").value;
+  const optionsRaw = document.getElementById("qm-options").value.trim();
+  const options = CHOICE_TYPES.includes(type) && optionsRaw
+    ? optionsRaw.split("\n").map(s => s.trim()).filter(Boolean)
+    : [];
+
+  if (!question) { alert("Sila isi teks soalan."); return; }
+  if (CHOICE_TYPES.includes(type) && options.length < 2) { alert("Sila isi sekurang-kurangnya 2 pilihan jawapan."); return; }
+
+  try {
+    if (id) {
+      await updateDoc(doc(db, "feedback_questions", id), {
+        question, type, required, status, options, updatedAt: serverTimestamp(),
+      });
+    } else {
+      const maxOrder = allQuestions.reduce((m, q) => Math.max(m, q.order || 0), 0);
+      await addDoc(collection(db, "feedback_questions"), {
+        question, type, required, status, options,
+        order: maxOrder + 1,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    closeQuestionModal();
+    await loadFeedbackQuestions();
+  } catch (err) {
+    alert(`Gagal simpan: ${err.message}`);
+  }
+}
+
+// ---- ANALISIS ----
+async function loadFeedbackAnalytics() {
+  const el = document.getElementById("analytics-container");
+  el.innerHTML = `<p style="padding:16px; color:var(--ink-soft);">Memuatkan...</p>`;
+  try {
+    const [qSnap, sSnap] = await Promise.all([
+      getDocs(query(collection(db, "feedback_questions"), orderBy("order", "asc"))),
+      getDocs(collection(db, "feedback_submissions")),
+    ]);
+    const questions = qSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const submissions = sSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (submissions.length === 0) {
+      el.innerHTML = `<p style="padding:16px; color:var(--ink-soft);">Tiada submission lagi.</p>`;
       return;
     }
 
-    // kira purata rating
-    const ratings = snap.docs.map(d => d.data().rating).filter(r => typeof r === "number" && r > 0);
-    const avg = ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : null;
-    const summary = avg
-      ? `<div class="feedback-summary">⭐ <strong>${avg}</strong> / 5 &nbsp;<span class="hint">(purata daripada ${ratings.length} penilaian, ${snap.docs.length} maklum balas keseluruhan)</span></div>`
-      : `<div class="feedback-summary"><span class="hint">${snap.docs.length} maklum balas, belum ada penilaian bintang</span></div>`;
+    // ---- KPI cards ----
+    const totalSubmissions = submissions.length;
+    const allRatingAnswers = [];
+    submissions.forEach(s => (s.answers || []).forEach(a => {
+      if (typeof a.answer === "number") allRatingAnswers.push(a.answer);
+    }));
+    const overallAvg = allRatingAnswers.length
+      ? (allRatingAnswers.reduce((a, b) => a + b, 0) / allRatingAnswers.length).toFixed(1)
+      : "-";
 
-    const starsHtml = (n) => n > 0
-      ? `<span class="feedback-card__stars">${"★".repeat(n)}${"☆".repeat(5 - n)}</span>`
-      : "";
+    let html = `
+      <div class="kpi-row">
+        <div class="kpi-card"><span class="kpi-card__value">${totalSubmissions}</span><span class="kpi-card__label">Jumlah Submission</span></div>
+        <div class="kpi-card"><span class="kpi-card__value">${overallAvg}</span><span class="kpi-card__label">Purata Rating Keseluruhan</span></div>
+        <div class="kpi-card"><span class="kpi-card__value">${questions.length}</span><span class="kpi-card__label">Jumlah Soalan</span></div>
+      </div>
+    `;
 
-    el.innerHTML = summary + snap.docs.map(d => {
-      const item = d.data();
-      const tarikh = item.dihantar_pada?.toDate
-        ? item.dihantar_pada.toDate().toLocaleString("ms-MY")
-        : "-";
-      return `
-        <div class="feedback-card" data-id="${d.id}">
-          <div class="feedback-card__meta">
-            <strong>${escapeAttr(item.nama) || "(Tanpa nama)"}</strong>
-            ${item.emel ? `<span>${escapeAttr(item.emel)}</span>` : ""}
-            ${starsHtml(item.rating || 0)}
-            <span class="feedback-card__date">${tarikh}</span>
-          </div>
-          <p class="feedback-card__msg">${escapeAttr(item.mesej)}</p>
-          <button type="button" class="icon-btn icon-btn--danger btn-delete-feedback" title="Padam">&times;</button>
-        </div>
-      `;
-    }).join("");
-
-    el.querySelectorAll(".btn-delete-feedback").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const card = btn.closest(".feedback-card");
-        const id = card.dataset.id;
-        if (!confirm("Padam maklum balas ni?")) return;
-        await deleteDoc(doc(db, "feedback", id));
-        card.remove();
+    // ---- per-soalan breakdown ----
+    for (const q of questions) {
+      const answersForQ = [];
+      submissions.forEach(s => {
+        const a = (s.answers || []).find(x => x.questionId === q.id);
+        if (a) answersForQ.push(a.answer);
       });
-    });
+      if (answersForQ.length === 0) continue;
+
+      html += `<div class="analytics-block"><h3>${escapeAttr(q.question)}</h3>`;
+
+      if (RATING_TYPES.includes(q.type)) {
+        const max = q.type === "rating5" ? 5 : 10;
+        const counts = Array.from({ length: max }, (_, i) => answersForQ.filter(a => a === i + 1).length);
+        const avg = (answersForQ.reduce((a, b) => a + b, 0) / answersForQ.length).toFixed(1);
+        html += `<p class="analytics-block__avg">Purata: <strong>${avg}</strong> / ${max} (${answersForQ.length} jawapan)</p>`;
+        html += `<canvas id="chart-${q.id}" height="90"></canvas>`;
+        setTimeout(() => renderBarChart(`chart-${q.id}`, counts.map((_, i) => String(i + 1)), counts), 0);
+      } else if (CHOICE_TYPES.includes(q.type)) {
+        const optionCounts = {};
+        (q.options || []).forEach(opt => optionCounts[opt] = 0);
+        answersForQ.forEach(a => {
+          const arr = Array.isArray(a) ? a : [a];
+          arr.forEach(v => { if (v in optionCounts) optionCounts[v]++; });
+        });
+        html += `<canvas id="chart-${q.id}" height="90"></canvas>`;
+        setTimeout(() => renderBarChart(`chart-${q.id}`, Object.keys(optionCounts), Object.values(optionCounts)), 0);
+      } else {
+        html += `<div class="analytics-comments">` + answersForQ.map(a =>
+          `<p class="analytics-comment">"${escapeAttr(a)}"</p>`
+        ).join("") + `</div>`;
+      }
+      html += `</div>`;
+    }
+
+    el.innerHTML = html;
   } catch (err) {
     console.error(err);
-    el.innerHTML = `<p style="padding:16px; color:#c0392b; font-size:14px;">✗ ${err.message}</p>`;
+    el.innerHTML = `<p style="padding:16px; color:#c0392b;">✗ ${err.message}</p>`;
   }
 }
+
+function renderBarChart(canvasId, labels, data) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx || typeof Chart === "undefined") return;
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: "#2F8F82", borderRadius: 6 }],
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+  });
+}
+
 function collectForm() {
   state.acara.label_kecil = document.getElementById("f-label-kecil").value.trim();
   state.acara.nama_penuh = document.getElementById("f-nama-penuh").value.trim();
@@ -354,11 +545,8 @@ function collectForm() {
   state.teks.label_faq_title = document.getElementById("t-faq-title").value.trim();
   state.teks.label_feedback_title = document.getElementById("t-feedback-title").value.trim();
   state.teks.label_tambah_kalendar = document.getElementById("t-tambah-kalendar").value.trim();
-  state.teks.label_fb_nama = document.getElementById("t-fb-nama").value.trim();
-  state.teks.label_fb_emel = document.getElementById("t-fb-emel").value.trim();
-  state.teks.label_fb_rating = document.getElementById("t-fb-rating").value.trim();
-  state.teks.label_fb_mesej = document.getElementById("t-fb-mesej").value.trim();
-  state.teks.label_fb_submit = document.getElementById("t-fb-submit").value.trim();
+  state.teks.label_feedback_cta_title = document.getElementById("t-feedback-cta-title").value.trim();
+  state.teks.label_feedback_cta_desc = document.getElementById("t-feedback-cta-desc").value.trim();
   state.teks.footer_org = document.getElementById("t-footer-org").value.trim();
   state.teks.footer_copyright = document.getElementById("t-footer-copyright").value.trim();
   state.teks.label_admin_link = document.getElementById("t-admin-link").value.trim();
@@ -487,10 +675,21 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("is-active", p.dataset.tabPanel === target));
     if (target === "feedback" && !feedbackLoaded) {
       feedbackLoaded = true;
-      loadFeedback();
+      loadFeedbackQuestions();
     }
   });
 });
+
+// ---- modal soalan: wiring butang ----
+document.getElementById("btn-add-question").addEventListener("click", () => openQuestionModal(null));
+document.getElementById("qm-close").addEventListener("click", closeQuestionModal);
+document.getElementById("qm-cancel").addEventListener("click", closeQuestionModal);
+document.getElementById("qm-save").addEventListener("click", saveQuestionFromModal);
+document.getElementById("qm-type").addEventListener("change", toggleOptionsField);
+document.getElementById("question-modal").addEventListener("click", (e) => {
+  if (e.target.id === "question-modal") closeQuestionModal(); // klik backdrop = tutup
+});
+
 
 onAuthStateChanged(auth, (user) => {
   if (user) {

@@ -44,18 +44,20 @@ untuk data teks dan login admin. AJK update kandungan melalui `/admin`.
          allow read: if true;
          allow write: if request.auth != null;
        }
-       match /feedback/{doc} {
-         allow create: if request.resource.data.mesej is string
-                       && request.resource.data.mesej.size() > 0
-                       && request.resource.data.mesej.size() < 2000
-                       && (!("rating" in request.resource.data) || (request.resource.data.rating is int && request.resource.data.rating >= 0 && request.resource.data.rating <= 5));
-         allow read, update, delete: if request.auth != null;
+       match /feedback_questions/{doc} {
+         allow read: if true;
+         allow write: if request.auth != null;
+       }
+       match /feedback_submissions/{doc} {
+         allow create: if request.resource.data.answers is list
+                       && request.resource.data.answers.size() > 0;
+         allow read, delete: if request.auth != null;
        }
      }
    }
    ```
-   (Bahagian `feedback` — sesiapa boleh **hantar** maklum balas [tanpa login], tapi cuma admin
-   yang log masuk boleh **baca/padam**. Ini elak orang lain nampak mesej peribadi pelawat lain.)
+   - `feedback_questions` — sesiapa boleh **baca** (perlu untuk page `/maklum-balas/` papar soalan), tapi cuma admin log masuk boleh **tulis** (tambah/edit/padam soalan)
+   - `feedback_submissions` — sesiapa boleh **hantar** jawapan (tanpa login), tapi cuma admin boleh **baca/padam** (untuk analisis, elak orang lain nampak jawapan pelawat lain)
 4. **Publish**
 
 ### 4. Dapatkan config & masukkan dalam repo
@@ -80,7 +82,8 @@ untuk data teks dan login admin. AJK update kandungan melalui `/admin`.
    4. Link 3 kotak (Pendaftaran / Call Room / Keputusan Tidak Rasmi) + keterangan
    5. Senarai maklumat & pengumuman (+ Tambah Maklumat, boleh susun semula)
    6. Soalan Lazim (FAQ) — accordion di laman utama
-   7. Semak & padam maklum balas yang dihantar pelawat (tab "Maklum Balas")
+   7. Soalan tinjauan/maklum balas — bina/susun soalan sendiri (tab "Maklum Balas" → "Soalan"), lihat analisis & carta (→ "Analisis"). Pelawat jawab di page berasingan `/maklum-balas/`
+   8. Wording — semua teks kelihatan di laman (tajuk seksyen, label, footer)
 4. Klik **Simpan Semua Perubahan** — laman terus update
 
 **Untuk gambar** (hero + 3 kotak + logo) — admin page cuma **papar pratonton**, tukar sebenar
@@ -161,7 +164,38 @@ Script (percuma, tiada kad kredit).
 **Nota:** semua dokumen akan masuk folder Drive **anda** (bukan Drive AJK masing-masing) —
 anda jadi penyimpan rasmi fail-fail ni. Storan guna kuota Drive akaun anda.
 
-## Preview link (WhatsApp/Telegram/Facebook)
+## Sistem Maklum Balas Dinamik (`/maklum-balas/`)
+
+Page berasingan (bukan bahagian laman utama) untuk soalan tinjauan/kepuasan pengguna.
+**Tiada soalan hardcode** — semua soalan diuruskan sepenuhnya dari `/admin`.
+
+### Cara guna (admin)
+
+1. `/admin` → tab **"Maklum Balas"** → sub-tab **"Soalan"**
+2. Klik **"+ Tambah Soalan"** → isi teks soalan, pilih jenis:
+   - **Rating 1-5** / **Rating 1-10** — skala kepuasan
+   - **Pilihan Tunggal** / **Pilihan Berbilang** — perlu isi senarai pilihan (1 baris = 1 pilihan)
+   - **Jawapan Pendek** / **Jawapan Panjang** — teks bebas
+3. Tetapkan **Wajib** (required) dan **Status** (Aktif/Tidak Aktif)
+4. Susun soalan guna butang ↑↓ dalam table
+5. Soalan **Aktif** sahaja akan dipaparkan di `/maklum-balas/` — susunan ikut "Susunan"
+
+**Nota penting:** perubahan di tab Soalan tersimpan **serta-merta** (bukan perlu klik "Simpan Semua Perubahan" — itu untuk data lain sahaja). Padam soalan **tidak** menjejaskan data submission lama, sebab setiap jawapan simpan salinan teks soalan pada masa dihantar.
+
+### Analisis
+
+Sub-tab **"Analisis"** papar:
+- KPI: jumlah submission, purata rating keseluruhan, jumlah soalan
+- Setiap soalan rating → carta bar (Chart.js) + purata
+- Setiap soalan pilihan → carta bar taburan pilihan
+- Setiap soalan teks → senarai jawapan (komen)
+
+### Struktur data Firestore
+
+- **`feedback_questions`** — satu dokumen per soalan (question, type, required, order, status, options, createdAt, updatedAt)
+- **`feedback_submissions`** — satu dokumen per submission (submittedAt, answers: array `{questionId, questionText, type, answer}`)
+
+
 
 Bila link `kopk.syazr.com` di-paste dalam app lain, ia akan papar kad preview (gambar +
 tajuk + keterangan) — ini dikawal oleh tag `<meta property="og:...">` dalam `<head>`
@@ -252,22 +286,32 @@ cache-bust sendiri (`asset_version`, laraskan dari `/admin`).
 ├── index.html                     ← laman utama (tak perlu sentuh)
 ├── styles.css                       ← design (tak perlu sentuh)
 ├── script.js                          ← baca data dari Firestore (tak perlu sentuh)
-├── firebase-config.js                  ← GANTI dengan config project Firebase anda
-├── apps-script-config.js                 ← GANTI dengan URL & kunci Apps Script anda
+├── sw.js                                 ← Service Worker (offline-ready)
+├── site.webmanifest                        ← PWA icons
+├── 404.html, sitemap.xml, robots.txt         ← SEO/error page
+├── firebase-config.js                          ← GANTI dengan config project Firebase anda
+├── apps-script-config.js                         ← GANTI dengan URL & kunci Apps Script anda
 ├── apps-script/
-│   └── Code.gs                             ← Salin ke script.google.com (rujuk panduan atas)
+│   └── Code.gs                                     ← Salin ke script.google.com (rujuk panduan atas)
 ├── admin/
-│   ├── index.html                        ← dashboard admin
-│   ├── admin.js                            ← logik login + simpan data (tak perlu sentuh)
+│   ├── index.html                                ← dashboard admin
+│   ├── admin.js                                    ← logik login + simpan data (tak perlu sentuh)
 │   └── admin.css
-├── images/                                  ← GANTI GAMBAR di sini (nama fail sama)
-│   ├── hero.jpg
-│   ├── kotak-pendaftaran.jpg
-│   ├── kotak-callroom.jpg
-│   ├── kotak-keputusan.jpg
-│   ├── logo-jata-negara.png
-│   ├── logo-mss-pahang.png
-│   └── logo-tambahan.png
-├── content.seed-example.json                  ← rujukan struktur data sahaja
-└── CNAME                                        ← domain custom
+├── maklum-balas/
+│   ├── index.html                                    ← page awam borang tinjauan
+│   ├── feedback.js                                     ← ambil soalan aktif dari Firestore, handle submit
+│   └── feedback.css
+├── images/                                              ← GANTI GAMBAR di sini (nama fail sama)
+│   ├── hero.jpg, hero-mobile.jpg
+│   ├── kotak-pendaftaran.jpg, kotak-callroom.jpg, kotak-keputusan.jpg
+│   ├── logo-jata-negara.png, logo-mss-pahang.png, logo-tambahan.png
+│   ├── og-image.jpg, qr-code.png
+├── icons/                                                 ← favicon/PWA icons
+├── .github/workflows/                                       ← automasi (cache-version, backup)
+├── content.seed-example.json                                 ← rujukan struktur data sahaja
+└── CNAME                                                       ← domain custom
 ```
+
+**Nota:** koleksi Firestore lama `feedback` (sistem bintang+mesej terdahulu, sebelum sistem
+soalan dinamik ni) tidak lagi digunakan — boleh dipadam manual di Firestore Console jika nak,
+atau biar sahaja (tidak menjejaskan apa-apa, cuma data lapuk tersimpan).

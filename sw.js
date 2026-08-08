@@ -7,12 +7,12 @@
 // Naikkan CACHE_VERSION bila-bila anda nak paksa semua pelawat
 // dapat app shell terbaru (macam sistem ?v= untuk CSS/JS).
 // ============================================================
-const CACHE_VERSION = "kopk-v4";
+const CACHE_VERSION = "kopk-v5";
 const APP_SHELL = [
   "/",
   "/index.html",
-  "/styles.css?v=13",
-  "/script.js?v=13",
+  "/styles.css?v=14",
+  "/script.js?v=14",
   "/firebase-config.js",
   "/site.webmanifest",
   "/favicon.ico",
@@ -21,6 +21,9 @@ const APP_SHELL = [
   "/images/hero.jpg",
   "/images/logo-jata-negara.png",
   "/images/logo-mss-pahang.png",
+  "/maklum-balas/index.html",
+  "/maklum-balas/feedback.css?v=1",
+  "/maklum-balas/feedback.js?v=1",
 ];
 
 self.addEventListener("install", (event) => {
