@@ -247,11 +247,10 @@ diisi di `/admin`. Tiada setup tambahan.
 ### `sitemap.xml` + `robots.txt` + Halaman 404
 Fail statik, siap. `robots.txt` block `/admin/` daripada diindeks Google.
 
-### GitHub Action — Auto naikkan versi cache
-`.github/workflows/bump-cache-version.yml` — jalan automatik bila `styles.css`/
-`script.js`/`admin.css`/`admin.js` di-push, naikkan `?v=` di semua tempat sendiri.
-Anda tak perlu ingat naikkan manual lagi. **Tiada setup tambahan** (guna token
-GitHub bawaan repo).
+> **Nota:** GitHub Action "auto naikkan versi cache" yang pernah dicadangkan
+> **dibuang** — ia menyebabkan *merge conflict* berulang sebab commit
+> automatik bertembung dengan perubahan kod manual. Nombor `?v=` dinaikkan
+> manual sahaja sekarang (rujuk bahagian "Cache CSS/JS" di bawah).
 
 ### GitHub Action — Backup Firestore harian
 `.github/workflows/backup-firestore.yml` — setiap hari, eksport data Firestore
